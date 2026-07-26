@@ -23,19 +23,24 @@ export function MatchVotePicker({
     if (!token) return;
     setPending(true);
     setError(null);
-    const res = await fetch("/api/vote", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ matchId, side, turnstileToken: token }),
-    });
-    setPending(false);
-    if (!res.ok) {
-      const json = await res.json().catch(() => ({}));
-      setError(json.error ?? "Vote failed");
-      return;
+    try {
+      const res = await fetch("/api/vote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ matchId, side, turnstileToken: token }),
+      });
+      setPending(false);
+      if (!res.ok) {
+        const json = await res.json().catch(() => ({}));
+        setError(json.error ?? "Vote failed");
+        return;
+      }
+      setVoted(side);
+      onVoted(side);
+    } catch {
+      setPending(false);
+      setError("Network error — please try again");
     }
-    setVoted(side);
-    onVoted(side);
   }
 
   if (voted) {

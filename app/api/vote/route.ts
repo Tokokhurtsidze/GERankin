@@ -46,7 +46,13 @@ export async function POST(req: Request) {
   }
 
   try {
-    await Vote.create({ match: matchId, voter: session.user.id, side, turnstileVerified: true, ip });
+    await Vote.create({
+      match: matchId,
+      voter: session.user.id,
+      side,
+      turnstileVerified: Boolean(process.env.TURNSTILE_SECRET_KEY),
+      ip,
+    });
   } catch (err: unknown) {
     if (err && typeof err === "object" && "code" in err && err.code === 11000) {
       return NextResponse.json({ error: "You already voted in this match" }, { status: 409 });

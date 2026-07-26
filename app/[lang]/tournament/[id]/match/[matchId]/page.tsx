@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { dbConnect } from "@/lib/db/connect";
@@ -26,17 +27,24 @@ function toProfile(raw: unknown): ProfileSide | undefined {
 function ProfileColumn({
   side,
   tournamentId,
-  locale,
 }: {
   side: ProfileSide;
   tournamentId: string;
-  locale: string;
 }) {
   return (
     <div className="flex flex-col gap-4">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">{side.name}</h2>
-        <p className="mt-1 text-text-muted">{side.tagline}</p>
+      <div className="flex items-center gap-3">
+        <Image
+          src={side.logoUrl}
+          alt={side.name}
+          width={48}
+          height={48}
+          className="ink-border h-12 w-12 shrink-0 rounded-md object-cover"
+        />
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight">{side.name}</h2>
+          <p className="mt-1 text-text-muted">{side.tagline}</p>
+        </div>
       </div>
 
       <div className="ink-border hard-shadow-sm h-64 overflow-hidden rounded-xl sm:h-72">
@@ -77,6 +85,7 @@ export default async function MatchVotePage({
     .lean();
 
   if (!match) notFound();
+  if (match.tournament.toString() !== id) notFound();
 
   const startupA = toProfile(match.startupA);
   const startupB = toProfile(match.startupB);
@@ -108,8 +117,8 @@ export default async function MatchVotePage({
   return (
     <section className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
       <div className="grid grid-cols-1 gap-10 sm:grid-cols-2">
-        <ProfileColumn side={startupA} tournamentId={id} locale={lang} />
-        <ProfileColumn side={startupB} tournamentId={id} locale={lang} />
+        <ProfileColumn side={startupA} tournamentId={id} />
+        <ProfileColumn side={startupB} tournamentId={id} />
       </div>
 
       <div className="mx-auto mt-10 max-w-md">
