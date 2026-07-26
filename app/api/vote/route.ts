@@ -8,7 +8,7 @@ import { verifyTurnstileToken } from "@/lib/turnstile/verify";
 const bodySchema = z.object({
   matchId: z.string().min(1),
   side: z.enum(["A", "B"]),
-  turnstileToken: z.string().min(1),
+  turnstileToken: z.string().optional(),
 });
 
 export async function POST(req: Request) {
@@ -25,10 +25,13 @@ export async function POST(req: Request) {
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
 
-  // Anti-bot: Turnstile challenge + verified-email gate, both required before a vote counts.
-  const turnstileOk = await verifyTurnstileToken(turnstileToken, ip);
-  if (!turnstileOk) {
-    return NextResponse.json({ error: "Bot verification failed" }, { status: 403 });
+  // Anti-bot: Turnstile challenge + verified-email gate, both required before a vote counts
+  // (Turnstile check is skipped automatically when TURNSTILE_SECRET_KEY isn't configured).
+  if (process.env.TURNSTILE_SECRET_KEY) {
+    const turnstileOk = await verifyTurnstileToken(turnstileToken ?? "", ip);
+    if (!turnstileOk) {
+      return NextResponse.json({ error: "Bot verification failed" }, { status: 403 });
+    }
   }
 
   await dbConnect();

@@ -31,12 +31,12 @@ export function TurnstileWidget({ onVerify }: { onVerify: (token: string | null)
     });
   }, [scriptReady, onVerify]);
 
+  useEffect(() => {
+    if (!SITE_KEY) onVerify("skipped");
+  }, [onVerify]);
+
   if (!SITE_KEY) {
-    return (
-      <p className="text-xs text-text-muted">
-        Bot verification not configured (set <code>NEXT_PUBLIC_TURNSTILE_SITE_KEY</code>).
-      </p>
-    );
+    return <p className="text-xs text-text-muted">Bot verification skipped (not configured).</p>;
   }
 
   return (
