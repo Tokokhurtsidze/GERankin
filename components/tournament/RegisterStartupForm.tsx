@@ -1,0 +1,79 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
+function normalizeUrl(value: string): string {
+  const trimmed = value.trim();
+  if (!trimmed) return trimmed;
+  return /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+}
+
+const inputClass =
+  "ink-border rounded-lg bg-surface px-3.5 py-2.5 text-sm placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent";
+
+export function RegisterStartupForm({
+  tournamentId,
+  defaultWebsiteUrl,
+}: {
+  tournamentId: string;
+  defaultWebsiteUrl?: string;
+}) {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setPending(true);
+    setError(null);
+
+    const form = new FormData(e.currentTarget);
+    const body = {
+      tournamentId,
+      name: form.get("name"),
+      tagline: form.get("tagline"),
+      description: form.get("description"),
+      logoUrl: normalizeUrl(String(form.get("logoUrl") ?? "")),
+      websiteUrl: normalizeUrl(String(form.get("websiteUrl") ?? "")),
+    };
+
+    const res = await fetch("/api/register-startup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+
+    setPending(false);
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}));
+      setError(json.error?.formErrors?.[0] ?? json.error ?? "Registration failed");
+      return;
+    }
+    router.refresh();
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      {error && <p className="text-sm font-medium text-red-600">{error}</p>}
+      <input name="name" placeholder="Startup name" required maxLength={80} className={inputClass} />
+      <input name="tagline" placeholder="One-line tagline" required maxLength={160} className={inputClass} />
+      <textarea name="description" placeholder="Description" required rows={4} className={inputClass} />
+      <input name="logoUrl" placeholder="Logo URL" required className={inputClass} />
+      <input
+        name="websiteUrl"
+        placeholder="yourstartup.ge"
+        required
+        defaultValue={defaultWebsiteUrl}
+        className={inputClass}
+      />
+      <button
+        type="submit"
+        disabled={pending}
+        className="rounded-lg bg-accent px-4 py-2.5 font-semibold text-white hover:bg-accent-hover disabled:opacity-50"
+      >
+        {pending ? "Submitting..." : "Enter the tournament"}
+      </button>
+    </form>
+  );
+}

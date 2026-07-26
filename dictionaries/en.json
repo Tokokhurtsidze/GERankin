@@ -1,0 +1,61 @@
+{
+  "nav": {
+    "bracket": "Bracket",
+    "winners": "Winners",
+    "faq": "FAQ",
+    "pricing": "Pricing",
+    "slides": "Slides",
+    "dashboard": "Dashboard",
+    "login": "Log in",
+    "launch": "Launch your startup"
+  },
+  "hero": {
+    "eyebrow": "Weekly knockout tournament",
+    "titleLine1": "CLASH.",
+    "titleLine2": "VOTE.",
+    "titleLine3": "WIN.",
+    "subtitle": "Enter your startup, get matched 1v1 against similar Georgian products, and let the public decide who ships the best.",
+    "urlPlaceholder": "yourstartup.ge",
+    "cta": "Launch",
+    "ctaBadge": "Free",
+    "joinCount": "founders in the arena",
+    "howItWorks": "How it works",
+    "championLabel": "Reigning Champion"
+  },
+  "howItWorks": {
+    "step1Title": "1. Enter the bracket",
+    "step1Body": "One startup per account. Registration opens for a single 1-hour window before every tournament.",
+    "step2Title": "2. Get matched 1v1",
+    "step2Body": "Dynamic seeding pairs 2 to 32 startups into a single-elimination bracket — byes for the top seeds if the field isn't a perfect power of two.",
+    "step3Title": "3. The public votes",
+    "step3Body": "Every round runs on a countdown. A 50/50 tie triggers overtime or falls to whoever got the first vote.",
+    "step4Title": "4. A champion is crowned",
+    "step4Body": "The winner is showcased on the homepage — logo, tagline, and a link straight to their site."
+  },
+  "registration": {
+    "windowOpen": "Registration is open",
+    "windowClosed": "Registration is closed",
+    "capacity": "entries",
+    "closing": "closing..."
+  },
+  "bracket": {
+    "round": "Round",
+    "roundLabel": "BRACKET · ROUND",
+    "endedRounds": "Ended rounds",
+    "matches": "matches",
+    "live": "Live",
+    "closesIn": "closes in"
+  },
+  "match": {
+    "vote": "Vote",
+    "share": "Share",
+    "votes": "votes",
+    "overtime": "Overtime",
+    "comments": "Discussion",
+    "timeline": "Timeline"
+  },
+  "footerCta": {
+    "title": "Your competitors already entered the bracket",
+    "cta": "Launch free now"
+  }
+}

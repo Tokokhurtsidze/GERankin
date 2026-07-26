@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+:root {
+  /* Minimal, neutral, product-grade palette — one accent, everything else grayscale. */
+  --bg: #ffffff;
+  --surface: #f7f7f8;
+  --border: #e5e7eb;
+  --text: #0a0a0a;
+  --text-muted: #6b7280;
+
+  --accent: #2f6feb;
+  --accent-hover: #2558c4;
+  --accent-soft: rgba(47, 111, 235, 0.1);
+}
+
+:root[data-theme="dark"] {
+  --bg: #0a0a0a;
+  --surface: #131316;
+  --border: #26262b;
+  --text: #f4f4f5;
+  --text-muted: #9a9aa2;
+
+  --accent: #5b8dff;
+  --accent-hover: #7fa4ff;
+  --accent-soft: rgba(91, 141, 255, 0.16);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0a0a0a;
+    --surface: #131316;
+    --border: #26262b;
+    --text: #f4f4f5;
+    --text-muted: #9a9aa2;
+    --accent: #5b8dff;
+    --accent-hover: #7fa4ff;
+    --accent-soft: rgba(91, 141, 255, 0.16);
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-soft: var(--accent-soft);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+html {
+  background: var(--bg);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+body::-webkit-scrollbar {
+  display: none;
+}
+
+.ink-border {
+  border: 1px solid var(--border);
+}
+
+.hard-shadow {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.hard-shadow-sm {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.font-mono-score {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

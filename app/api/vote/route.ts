@@ -1,0 +1,63 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { auth } from "@/lib/auth/auth";
+import { dbConnect } from "@/lib/db/connect";
+import { Match, Vote, User } from "@/lib/db/models";
+import { verifyTurnstileToken } from "@/lib/turnstile/verify";
+
+const bodySchema = z.object({
+  matchId: z.string().min(1),
+  side: z.enum(["A", "B"]),
+  turnstileToken: z.string().min(1),
+});
+
+export async function POST(req: Request) {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const parsed = bodySchema.safeParse(await req.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+  }
+  const { matchId, side, turnstileToken } = parsed.data;
+
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+
+  // Anti-bot: Turnstile challenge + verified-email gate, both required before a vote counts.
+  const turnstileOk = await verifyTurnstileToken(turnstileToken, ip);
+  if (!turnstileOk) {
+    return NextResponse.json({ error: "Bot verification failed" }, { status: 403 });
+  }
+
+  await dbConnect();
+  const voter = await User.findById(session.user.id);
+  if (!voter?.emailVerified) {
+    return NextResponse.json({ error: "Please verify your email before voting" }, { status: 403 });
+  }
+
+  const match = await Match.findById(matchId);
+  if (!match || (match.status !== "live" && match.status !== "overtime")) {
+    return NextResponse.json({ error: "Voting is not open for this match" }, { status: 409 });
+  }
+
+  try {
+    await Vote.create({ match: matchId, voter: session.user.id, side, turnstileVerified: true, ip });
+  } catch (err: unknown) {
+    if (err && typeof err === "object" && "code" in err && err.code === 11000) {
+      return NextResponse.json({ error: "You already voted in this match" }, { status: 409 });
+    }
+    throw err;
+  }
+
+  const voteField = side === "A" ? "votesA" : "votesB";
+  const firstVoteField = side === "A" ? "firstVoteAAt" : "firstVoteBAt";
+  const update: Record<string, unknown> = { $inc: { [voteField]: 1 } };
+  if (side === "A" ? !match.firstVoteAAt : !match.firstVoteBAt) {
+    update.$set = { [firstVoteField]: new Date() };
+  }
+  await Match.updateOne({ _id: matchId }, update);
+
+  return NextResponse.json({ ok: true });
+}
