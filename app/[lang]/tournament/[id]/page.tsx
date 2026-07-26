@@ -128,7 +128,7 @@ export default async function TournamentPage({
             <EmptyState title="No live matches" message="This round hasn't been seeded yet — check back shortly." />
           )}
           {currentRoundMatches.map((m) => (
-            <MatchCard key={m.id} match={m} locale={lang} interactive={tournament.status === "in_progress"} />
+            <MatchCard key={m.id} match={m} locale={lang} tournamentId={id} interactive={tournament.status === "in_progress"} />
           ))}
         </div>
 
@@ -146,7 +146,7 @@ export default async function TournamentPage({
         </aside>
       </div>
 
-      <EndedRoundsAccordion rounds={endedRounds} locale={lang} label="Ended rounds" matchesLabel="matches" />
+      <EndedRoundsAccordion rounds={endedRounds} locale={lang} tournamentId={id} label="Ended rounds" matchesLabel="matches" />
     </section>
   );
 }

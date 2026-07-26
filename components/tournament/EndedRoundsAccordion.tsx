@@ -12,11 +12,13 @@ export interface EndedRound {
 export function EndedRoundsAccordion({
   rounds,
   locale,
+  tournamentId,
   label,
   matchesLabel,
 }: {
   rounds: EndedRound[];
   locale: string;
+  tournamentId: string;
   label: string;
   matchesLabel: string;
 }) {
@@ -47,7 +49,7 @@ export function EndedRoundsAccordion({
               {isOpen && (
                 <div className="flex flex-col gap-3 border-t border-border p-4">
                   {r.matches.map((m) => (
-                    <MatchCard key={m.id} match={m} locale={locale} interactive={false} />
+                    <MatchCard key={m.id} match={m} locale={locale} tournamentId={tournamentId} interactive={false} />
                   ))}
                 </div>
               )}

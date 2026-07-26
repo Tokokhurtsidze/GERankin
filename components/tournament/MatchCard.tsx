@@ -55,10 +55,12 @@ function SideBlock({ side, locale }: { side?: MatchCardSide; locale: string }) {
 export function MatchCard({
   match,
   locale,
+  tournamentId,
   interactive,
 }: {
   match: MatchCardData;
   locale: string;
+  tournamentId: string;
   interactive: boolean;
 }) {
   return (
@@ -82,9 +84,9 @@ export function MatchCard({
         {interactive && match.startupA && match.startupB && (
           <div className="sm:w-56">
             <VoteButtons
+              locale={locale}
+              tournamentId={tournamentId}
               matchId={match.id}
-              nameA={match.startupA.name}
-              nameB={match.startupB.name}
               canVote={match.status === "live" || match.status === "overtime"}
             />
           </div>
