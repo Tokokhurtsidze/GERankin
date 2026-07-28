@@ -1,8 +1,10 @@
 import { Schema, model, models, type Document, type Model, type Types } from "mongoose";
 
-// Durable audit log of login attempts. The live 3-strike cooldown counter itself
-// lives in Upstash Redis (see lib/redis/login-rate-limit.ts) for atomic, fast
-// increments — this collection is the persistent record for security review.
+// Durable audit log of login attempts. Not currently written to or read from
+// anywhere — Google OAuth is the sole auth provider, so there's no credentials
+// form to brute-force yet. Keep this model honest: no Redis-backed rate limit
+// exists. Wire one up (and start writing to this collection) before adding a
+// credentials-based login flow.
 export interface ILoginAttempt extends Document {
   _id: Types.ObjectId;
   email: string;

@@ -46,8 +46,16 @@ export function RegisterStartupForm({
 
     setPending(false);
     if (!res.ok) {
-      const json = await res.json().catch(() => ({}));
-      setError(json.error?.formErrors?.[0] ?? json.error ?? "Registration failed");
+      const json: { error?: unknown } = await res.json().catch(() => ({}));
+      const err = json.error as
+        | string
+        | { formErrors?: string[]; fieldErrors?: Record<string, string[]> }
+        | undefined;
+      const message =
+        typeof err === "string"
+          ? err
+          : (err?.formErrors?.[0] ?? Object.values(err?.fieldErrors ?? {})[0]?.[0] ?? "Registration failed");
+      setError(message);
       return;
     }
     router.refresh();

@@ -34,6 +34,20 @@ export async function dbConnect(): Promise<typeof mongoose> {
     throw err;
   }
 
+  // Mongoose builds indexes in the background and swallows failures silently
+  // (e.g. a unique index refusing to build because duplicate data already
+  // exists) — force it here once per process so a broken index surfaces in
+  // logs instead of silently never protecting anything.
+  const { Startup } = await import("./models/Startup");
+  Startup.syncIndexes().catch((err) => {
+    console.error("Startup.syncIndexes() failed — the unique (owner, tournament) index is NOT enforced:", err);
+  });
+
+  const { Tournament } = await import("./models/Tournament");
+  Tournament.syncIndexes().catch((err) => {
+    console.error("Tournament.syncIndexes() failed — the unique activeLock index is NOT enforced:", err);
+  });
+
   return cache.conn;
 }
 

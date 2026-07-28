@@ -3,13 +3,12 @@ import { z } from "zod";
 import { auth } from "@/lib/auth/auth";
 import { dbConnect } from "@/lib/db/connect";
 import { Tournament } from "@/lib/db/models";
-import { scheduleTournamentStart } from "@/lib/tournament/schedule";
 
 const REGISTRATION_WINDOW_MS = 60 * 60_000; // 1 hour, per spec
 
 const createSchema = z.object({
   name: z.string().min(2).max(120),
-  roundDurationMinutes: z.number().int().min(1).max(1440).default(60),
+  roundDurationMinutes: z.number().int().min(1).max(1440).default(1440),
 });
 
 export async function GET() {
@@ -36,31 +35,29 @@ export async function POST(req: Request) {
 
   await dbConnect();
 
-  const existingOpen = await Tournament.findOne({
-    status: { $in: ["registration", "seeding", "in_progress"] },
-  });
-  if (existingOpen) {
-    return NextResponse.json({ error: "A tournament is already active" }, { status: 409 });
-  }
-
   const registrationOpensAt = new Date();
   const registrationClosesAt = new Date(registrationOpensAt.getTime() + REGISTRATION_WINDOW_MS);
 
-  const tournament = await Tournament.create({
-    name: parsed.data.name,
-    status: "registration",
-    registrationOpensAt,
-    registrationClosesAt,
-    roundDurationMinutes: parsed.data.roundDurationMinutes,
-  });
-
   try {
-    await scheduleTournamentStart(tournament._id.toString(), registrationClosesAt);
-  } catch (err) {
-    // QStash not configured (e.g. local dev) — tournament still opens, just
-    // won't auto-start; trigger /api/cron/start-tournament manually instead.
-    console.warn("Failed to schedule QStash start job:", err);
-  }
+    const tournament = await Tournament.create({
+      name: parsed.data.name,
+      status: "registration",
+      registrationOpensAt,
+      registrationClosesAt,
+      roundDurationMinutes: parsed.data.roundDurationMinutes,
+      activeLock: 1,
+    });
 
-  return NextResponse.json({ tournament }, { status: 201 });
+    // /api/cron/sweep (Vercel Cron) picks up the registration close and every
+    // round advance from here — no manual step needed.
+    return NextResponse.json({ tournament }, { status: 201 });
+  } catch (err: unknown) {
+    // Unique activeLock index -> another tournament is already open. A plain
+    // find-then-create here would race under concurrent requests, so the
+    // index (not the read) is the actual guard — this just gives a clean error.
+    if (err && typeof err === "object" && "code" in err && err.code === 11000) {
+      return NextResponse.json({ error: "A tournament is already active" }, { status: 409 });
+    }
+    throw err;
+  }
 }

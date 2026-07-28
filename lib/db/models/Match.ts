@@ -15,7 +15,7 @@ export interface IMatch extends Document {
   startsAt: Date;
   endsAt: Date;
   // Tie-breaker: when votesA === votesB at endsAt
-  isOvertime: boolean;
+  overtimesUsed: number; // how many overtime periods this match has gone through
   overtimeEndsAt?: Date;
   firstVoteAAt?: Date; // earliest vote timestamp per side, used for early-vote priority tie-break
   firstVoteBAt?: Date;
@@ -42,7 +42,7 @@ const MatchSchema = new Schema<IMatch>(
     },
     startsAt: { type: Date, required: true },
     endsAt: { type: Date, required: true },
-    isOvertime: { type: Boolean, default: false },
+    overtimesUsed: { type: Number, default: 0 },
     overtimeEndsAt: { type: Date },
     firstVoteAAt: { type: Date },
     firstVoteBAt: { type: Date },

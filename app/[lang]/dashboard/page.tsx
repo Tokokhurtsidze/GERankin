@@ -18,7 +18,7 @@ async function loadDashboardData(ownerId: string): Promise<{ startup: IStartup |
 export default async function DashboardPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   const session = await auth();
-  if (!session?.user) redirect(`/${lang}/auth/login`);
+  if (!session?.user) redirect(`/${lang}/auth/login?callbackUrl=${encodeURIComponent(`/${lang}/dashboard`)}`);
 
   const data = await loadDashboardData(session.user.id);
 

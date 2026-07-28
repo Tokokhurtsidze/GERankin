@@ -6,6 +6,7 @@ import { ChampionShowcase } from "@/components/tournament/ChampionShowcase";
 import { RegistrationCountdown } from "@/components/tournament/RegistrationCountdown";
 import { HeroLaunchForm } from "@/components/tournament/HeroLaunchForm";
 import { HowItWorks } from "@/components/tournament/HowItWorks";
+import { HomeBracketTree } from "@/components/tournament/HomeBracketTree";
 import { LiveBracketSection } from "@/components/tournament/LiveBracketSection";
 import { AvatarCluster } from "@/components/ui/AvatarCluster";
 import { FooterCtaBanner } from "@/components/marketing/FooterCtaBanner";
@@ -13,6 +14,7 @@ import { HallOfFame } from "@/components/marketing/HallOfFame";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import { SlideScroller, type SlideSectionMeta } from "@/components/marketing/SlideScroller";
+import { SiteFooter } from "@/components/marketing/SiteFooter";
 import { SlideDeck, type Slide } from "@/components/slides/SlideDeck";
 import { notFound } from "next/navigation";
 
@@ -77,6 +79,8 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
     { id: "pricing", label: dict.nav.pricing },
     { id: "faq", label: dict.nav.faq },
     { id: "cta", label: "Get started" },
+    { id: "bracket-tree", label: dict.nav.fullBracket },
+    { id: "footer", label: "Footer" },
   ];
 
   return (
@@ -85,7 +89,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         <section id="hero" className={SLIDE_CLASS}>
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">{dict.hero.eyebrow}</p>
-            <h1 className="mx-auto mt-4 max-w-3xl text-5xl font-bold tracking-tight sm:text-6xl">
+            <h1 className="mx-auto mt-4 max-w-3xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl">
               {dict.hero.titleLine1} {dict.hero.titleLine2} {dict.hero.titleLine3}
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-base text-text-muted sm:text-lg">{dict.hero.subtitle}</p>
@@ -95,7 +99,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
             </div>
 
             <div className="mt-6 flex justify-center">
-              <AvatarCluster count={founderCount} label={dict.hero.joinCount} />
+              <AvatarCluster count={founderCount} joinWord={dict.hero.joinPrefix} label={dict.hero.joinCount} />
             </div>
 
             {champion && (
@@ -123,14 +127,14 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
 
         {/* How it works */}
         <section id="how-it-works" className={SLIDE_CLASS}>
-          <HowItWorks label="How it works" steps={steps} />
+          <HowItWorks label={dict.howItWorks.label} steps={steps} />
         </section>
 
-        {/* Live bracket */}
+        {/* Current round matchups — vote directly, same flow as before */}
         <section id="bracket" className={SLIDE_CLASS}>
           <div className="w-full max-w-2xl">
-            <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">Bracket</p>
-            <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">Live matchups</h2>
+            <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">{dict.nav.bracket}</p>
+            <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.home.liveMatchups}</h2>
             <div className="mt-10">
               <LiveBracketSection tournament={tournament} locale={locale} />
             </div>
@@ -143,7 +147,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
             <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">
               {dict.nav.slides}
             </p>
-            <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">On the radar</h2>
+            <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.home.onTheRadar}</h2>
             <div className="mt-10">
               <SlideDeck slides={slides} />
             </div>
@@ -156,9 +160,9 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
             <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">
               {dict.nav.winners}
             </p>
-            <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">Hall of Fame</h2>
+            <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.leaderboard.heading}</h2>
             <div className="mt-10">
-              <HallOfFame />
+              <HallOfFame dict={dict} />
             </div>
           </div>
         </section>
@@ -169,9 +173,9 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
             <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">
               {dict.nav.pricing}
             </p>
-            <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">Choose your growth plan</h2>
+            <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.pricing.heading}</h2>
             <div className="mt-10">
-              <PricingPlans locale={locale} />
+              <PricingPlans locale={locale} dict={dict} />
             </div>
           </div>
         </section>
@@ -182,9 +186,9 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
             <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">
               {dict.nav.faq}
             </p>
-            <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">Before you launch</h2>
+            <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.faq.heading}</h2>
             <div className="mt-10">
-              <FaqAccordion />
+              <FaqAccordion locale={locale} />
             </div>
           </div>
         </section>
@@ -196,8 +200,29 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
             title={dict.footerCta.title}
             cta={dict.footerCta.cta}
             founderCount={founderCount}
+            joinWord={dict.hero.joinPrefix}
             joinLabel={dict.hero.joinCount}
           />
+        </section>
+
+        {/* Full tournament tree */}
+        <section id="bracket-tree" className={SLIDE_CLASS}>
+          <div className="flex h-full w-full max-w-6xl flex-col">
+            <p className="shrink-0 text-center text-xs font-semibold uppercase tracking-wide text-text-muted">{dict.nav.bracket}</p>
+            <h2 className="mt-2 shrink-0 text-center text-3xl font-bold tracking-tight">{dict.nav.fullBracket}</h2>
+            <div className="mt-6 min-h-0 flex-1">
+              <HomeBracketTree
+                tournament={tournament}
+                locale={locale}
+                dict={{ round: dict.bracket.round, final: dict.bracket.final }}
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Footer, as the deck's final slide */}
+        <section id="footer" className={`${SLIDE_CLASS} !justify-end !py-0`}>
+          <SiteFooter locale={locale} dict={dict} />
         </section>
     </SlideScroller>
   );

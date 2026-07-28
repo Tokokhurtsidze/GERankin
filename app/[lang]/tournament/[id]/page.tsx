@@ -1,29 +1,27 @@
 import { notFound } from "next/navigation";
 import { dbConnect } from "@/lib/db/connect";
-import { Tournament, Match, Startup } from "@/lib/db/models";
+import { Tournament, Match } from "@/lib/db/models";
 import { EmptyState } from "@/components/ui/EmptyState";
-import { MatchCard, type MatchCardData, type MatchCardSide } from "@/components/tournament/MatchCard";
-import { EndedRoundsAccordion, type EndedRound } from "@/components/tournament/EndedRoundsAccordion";
-import { StartupRailCard } from "@/components/tournament/StartupRailCard";
 import { RegistrationCountdown } from "@/components/tournament/RegistrationCountdown";
+import { BracketTree } from "@/components/tournament/BracketTree";
+import { BracketMobileList } from "@/components/tournament/BracketMobileList";
+import { buildBracketTree, type TreeMatch, type TreeStartup } from "@/lib/bracket/tree";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { isLocale, type Locale } from "@/lib/i18n/config";
 
 interface PopulatedSide {
   _id: unknown;
   name: string;
   logoUrl: string;
-  websiteUrl: string;
-  owner?: { name?: string };
 }
 
-function toSide(raw: unknown): MatchCardSide | undefined {
+function toTreeSide(raw: unknown): TreeStartup | undefined {
   const side = raw as PopulatedSide | undefined;
   if (!side?.name) return undefined;
   return {
     id: String(side._id),
     name: side.name,
     logoUrl: side.logoUrl,
-    websiteUrl: side.websiteUrl,
-    ownerName: side.owner?.name,
   };
 }
 
@@ -33,13 +31,15 @@ export default async function TournamentPage({
   params: Promise<{ id: string; lang: string }>;
 }) {
   const { id, lang } = await params;
+  if (!isLocale(lang)) notFound();
+  const dict = await getDictionary(lang as Locale);
 
   try {
     await dbConnect();
   } catch {
     return (
       <section className="mx-auto max-w-6xl px-4 py-12">
-        <EmptyState title="Database not connected" message="Set MONGODB_URI in .env.local to load this tournament." />
+        <EmptyState title="Database not connected" message={dict.tournament.dbNotConnectedBody} />
       </section>
     );
   }
@@ -48,8 +48,8 @@ export default async function TournamentPage({
   if (!tournament) notFound();
 
   const populateOpts = [
-    { path: "startupA", select: "name logoUrl websiteUrl owner", populate: { path: "owner", select: "name" } },
-    { path: "startupB", select: "name logoUrl websiteUrl owner", populate: { path: "owner", select: "name" } },
+    { path: "startupA", select: "name logoUrl" },
+    { path: "startupB", select: "name logoUrl" },
   ];
 
   const allMatches = await Match.find({ tournament: id })
@@ -57,96 +57,88 @@ export default async function TournamentPage({
     .sort({ round: 1, slot: 1 })
     .lean();
 
-  const toCardData = (m: (typeof allMatches)[number]): MatchCardData => ({
+  const toTreeMatch = (m: (typeof allMatches)[number]): TreeMatch => ({
     id: m._id.toString(),
-    startupA: toSide(m.startupA),
-    startupB: toSide(m.startupB),
+    round: m.round,
+    slot: m.slot,
+    nextMatchId: m.nextMatch ? m.nextMatch.toString() : null,
+    startupA: toTreeSide(m.startupA),
+    startupB: toTreeSide(m.startupB),
     votesA: m.votesA,
     votesB: m.votesB,
     status: m.status,
-    winner: m.winner?.toString(),
+    winnerId: m.winner ? m.winner.toString() : null,
   });
 
-  const currentRoundDocs = allMatches.filter((m) => m.round === tournament.currentRound);
-  const currentRoundMatches = currentRoundDocs.map(toCardData);
-  const currentRoundEndsAt = currentRoundDocs[0]?.endsAt;
+  const treeMatches = allMatches.map(toTreeMatch);
+  const tree = buildBracketTree(treeMatches, tournament.totalRounds);
 
-  const endedRounds: EndedRound[] = Array.from({ length: Math.max(0, tournament.currentRound - 1) }, (_, i) => {
-    const round = i + 1;
-    const matches = allMatches.filter((m) => m.round === round);
-    const endedAt = matches.reduce<Date>((latest, m) => (m.updatedAt > latest ? m.updatedAt : latest), matches[0]?.updatedAt ?? tournament.updatedAt);
-    return { round, endedAt: endedAt.toISOString(), matches: matches.map(toCardData) };
-  }).reverse();
+  const currentRoundEndsAt = allMatches.find((m) => m.round === tournament.currentRound)?.endsAt;
 
-  const inCurrentMatch = new Set(
-    currentRoundMatches.flatMap((m) => [m.startupA?.id, m.startupB?.id].filter(Boolean) as string[])
-  );
-  const railStartups = await Startup.find({
-    tournament: id,
-    _id: { $nin: [...inCurrentMatch] },
-    eliminated: false,
-  })
-    .select("name tagline logoUrl")
-    .limit(4)
-    .lean();
+  const statusLabels: Record<string, string> = {
+    registration: dict.tournament.statusRegistration,
+    seeding: dict.tournament.statusSeeding,
+    in_progress: dict.tournament.statusInProgress,
+    completed: dict.tournament.statusCompleted,
+    cancelled: dict.tournament.statusCancelled,
+  };
+
+  const isLive = tournament.status === "in_progress";
+  const isFinalRound = tournament.currentRound === tournament.totalRounds;
+
+  // dict.bracket.roundLabel already ends with the same word as dict.bracket.round
+  // ("BRACKET · ROUND" / "Round", "ბრეკეტი · რაუნდი" / "რაუნდი") — strip that
+  // trailing word to get a reusable "BRACKET · " prefix for the final-round label.
+  const roundLabel = dict.bracket.roundLabel;
+  const roundWord = dict.bracket.round;
+  const roundLabelPrefix = roundLabel.toLowerCase().endsWith(roundWord.toLowerCase())
+    ? roundLabel.slice(0, roundLabel.length - roundWord.length)
+    : `${roundLabel} `;
+
+  const headerTitle = isLive
+    ? isFinalRound
+      ? `${roundLabelPrefix}${dict.bracket.final}`
+      : `${roundLabel} ${tournament.currentRound}`
+    : tournament.name;
+
+  const tournamentId = tournament._id.toString();
 
   return (
-    <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <div className="mb-8 text-center">
-        <p className="text-lg font-semibold">{tournament.name}</p>
-        {tournament.status === "in_progress" && (
-          <div className="mt-3 flex flex-col items-center gap-2 sm:flex-row sm:justify-center sm:gap-4">
-            <h1 className="text-sm font-semibold uppercase tracking-wide text-accent">
-              Round {tournament.currentRound}
-            </h1>
-            {currentRoundEndsAt && <RegistrationCountdown closesAt={currentRoundEndsAt.toISOString()} />}
-          </div>
-        )}
-        {tournament.status !== "in_progress" && (
-          <p className="mt-2 text-xs font-semibold uppercase tracking-wide text-text-muted">
-            {tournament.status}
-          </p>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[220px_1fr_220px]">
-        <aside className="hidden flex-col gap-4 lg:flex">
-          {railStartups.slice(0, 2).map((s) => (
-            <StartupRailCard
-              key={s._id.toString()}
-              locale={lang}
-              id={s._id.toString()}
-              name={s.name}
-              tagline={s.tagline}
-              logoUrl={s.logoUrl}
-            />
-          ))}
-        </aside>
-
-        <div className="flex flex-col gap-6">
-          {currentRoundMatches.length === 0 && (
-            <EmptyState title="No live matches" message="This round hasn't been seeded yet — check back shortly." />
-          )}
-          {currentRoundMatches.map((m) => (
-            <MatchCard key={m.id} match={m} locale={lang} tournamentId={id} interactive={tournament.status === "in_progress"} />
-          ))}
+    <section className="mx-auto flex h-[calc(100dvh-4rem)] max-w-6xl flex-col overflow-hidden px-4 py-6 sm:px-6">
+      <div className="mb-4 flex shrink-0 flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+        <div>
+          <h1 className="text-sm font-semibold uppercase tracking-wide text-accent">{headerTitle}</h1>
         </div>
 
-        <aside className="hidden flex-col gap-4 lg:flex">
-          {railStartups.slice(2, 4).map((s) => (
-            <StartupRailCard
-              key={s._id.toString()}
-              locale={lang}
-              id={s._id.toString()}
-              name={s.name}
-              tagline={s.tagline}
-              logoUrl={s.logoUrl}
-            />
-          ))}
-        </aside>
+        {isLive && currentRoundEndsAt ? (
+          <RegistrationCountdown closesAt={currentRoundEndsAt.toISOString()} closingLabel={dict.registration.closing} />
+        ) : (
+          <span className="font-mono-score ink-border rounded-full bg-surface px-3 py-1 text-xs font-semibold uppercase tracking-wide text-text-muted">
+            {statusLabels[tournament.status] ?? tournament.status}
+          </span>
+        )}
       </div>
 
-      <EndedRoundsAccordion rounds={endedRounds} locale={lang} tournamentId={id} label="Ended rounds" matchesLabel="matches" />
+      {treeMatches.length === 0 ? (
+        <EmptyState title={dict.tournament.noLiveMatchesTitle} message={dict.tournament.noLiveMatchesBody} />
+      ) : (
+        <div className="min-h-0 flex-1">
+          <BracketTree
+            tree={tree}
+            locale={lang}
+            tournamentId={tournamentId}
+            dict={{ round: dict.bracket.round, final: dict.bracket.final }}
+          />
+          <div className="h-full overflow-y-auto lg:hidden">
+            <BracketMobileList
+              tree={tree}
+              locale={lang}
+              tournamentId={tournamentId}
+              dict={{ round: dict.bracket.round, final: dict.bracket.final }}
+            />
+          </div>
+        </div>
+      )}
     </section>
   );
 }

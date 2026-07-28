@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { isValidObjectId } from "mongoose";
 import { dbConnect } from "@/lib/db/connect";
 import { Startup } from "@/lib/db/models";
 import { LiveWebsitePreview } from "@/components/tournament/LiveWebsitePreview";
@@ -7,6 +8,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 
 export default async function StartupProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  if (!isValidObjectId(id)) notFound();
 
   try {
     await dbConnect();
@@ -23,7 +25,16 @@ export default async function StartupProfilePage({ params }: { params: Promise<{
 
   return (
     <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
-      <h1 className="text-3xl font-bold tracking-tight">{startup.name}</h1>
+      <div className="flex items-center gap-3">
+        <h1 className="text-3xl font-bold tracking-tight">{startup.name}</h1>
+        <span
+          className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+            startup.eliminated ? "bg-surface text-text-muted" : "bg-accent-soft text-accent"
+          }`}
+        >
+          {startup.eliminated ? "Eliminated" : "Still in it"}
+        </span>
+      </div>
       <p className="mt-1 text-text-muted">{startup.tagline}</p>
 
       <div className="ink-border hard-shadow-sm my-6 h-96 overflow-hidden rounded-xl">

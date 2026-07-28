@@ -1,7 +1,7 @@
 /** Decorative overlapping avatar stack — abstract initials, not real people. */
-export function AvatarCluster({ count, label }: { count: number; label: string }) {
+export function AvatarCluster({ count, joinWord, label }: { count: number; joinWord: string; label: string }) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-center">
       <div className="flex -space-x-2">
         {["A", "B", "C", "D", "E"].map((letter) => (
           <span
@@ -13,7 +13,7 @@ export function AvatarCluster({ count, label }: { count: number; label: string }
         ))}
       </div>
       <p className="text-sm text-text-muted">
-        Join <span className="font-semibold text-text">{count.toLocaleString()}</span> {label}
+        {joinWord} <span className="font-semibold text-text">{count.toLocaleString()}</span> {label}
       </p>
     </div>
   );

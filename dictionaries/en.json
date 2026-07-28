@@ -1,13 +1,18 @@
 {
   "nav": {
     "bracket": "Bracket",
+    "fullBracket": "Full Bracket",
     "winners": "Winners",
     "faq": "FAQ",
     "pricing": "Pricing",
     "slides": "Slides",
     "dashboard": "Dashboard",
     "login": "Log in",
-    "launch": "Launch your startup"
+    "launch": "Launch",
+    "organize": "Organize",
+    "signOut": "Sign out",
+    "lightMode": "Light mode",
+    "darkMode": "Dark mode"
   },
   "hero": {
     "eyebrow": "Weekly knockout tournament",
@@ -18,6 +23,7 @@
     "urlPlaceholder": "yourstartup.ge",
     "cta": "Launch",
     "ctaBadge": "Free",
+    "joinPrefix": "Join",
     "joinCount": "founders in the arena",
     "howItWorks": "How it works",
     "championLabel": "Reigning Champion"
@@ -30,7 +36,8 @@
     "step3Title": "3. The public votes",
     "step3Body": "Every round runs on a countdown. A 50/50 tie triggers overtime or falls to whoever got the first vote.",
     "step4Title": "4. A champion is crowned",
-    "step4Body": "The winner is showcased on the homepage — logo, tagline, and a link straight to their site."
+    "step4Body": "The winner is showcased on the homepage — logo, tagline, and a link straight to their site.",
+    "label": "How it works"
   },
   "registration": {
     "windowOpen": "Registration is open",
@@ -43,6 +50,7 @@
     "roundLabel": "BRACKET · ROUND",
     "endedRounds": "Ended rounds",
     "matches": "matches",
+    "final": "Final",
     "live": "Live",
     "closesIn": "closes in"
   },
@@ -52,10 +60,109 @@
     "votes": "votes",
     "overtime": "Overtime",
     "comments": "Discussion",
-    "timeline": "Timeline"
+    "timeline": "Timeline",
+    "vs": "vs",
+    "backToRound": "← Back to round",
+    "notReadyTitle": "This match isn't ready to vote on yet",
+    "votingClosedTitle": "Voting isn't open for this match",
+    "roundClosedBody": "This round has already closed.",
+    "visit": "Visit {name} →",
+    "view": "View",
+    "voteCastFor": "Vote cast for {name}",
+    "voteFailed": "Vote failed",
+    "networkError": "Network error — please try again",
+    "commentPlaceholder": "Say something...",
+    "postCta": "Post",
+    "noComments": "No comments yet — be first.",
+    "anon": "Anon",
+    "tbd": "TBD",
+    "botVerificationSkipped": "Bot verification skipped (not configured).",
+    "dbNotConnectedBody": "Set MONGODB_URI in .env.local to load this match."
   },
   "footerCta": {
     "title": "Your competitors already entered the bracket",
     "cta": "Launch free now"
+  },
+  "tournament": {
+    "statusRegistration": "Registration",
+    "statusSeeding": "Seeding",
+    "statusInProgress": "In progress",
+    "statusCompleted": "Completed",
+    "statusCancelled": "Cancelled",
+    "noLiveMatchesTitle": "No live matches",
+    "noLiveMatchesBody": "This round hasn't been seeded yet — check back shortly.",
+    "dbNotConnectedBody": "Set MONGODB_URI in .env.local to load this tournament.",
+    "noLiveBracketTitle": "No live bracket right now",
+    "noLiveBracketBody": "Matches will appear here once a tournament kicks off.",
+    "bracketDbNotConnectedBody": "Set MONGODB_URI in .env.local to load the bracket.",
+    "viewFullBracket": "View full bracket →"
+  },
+  "dashboard": {
+    "heading": "Founder Dashboard",
+    "notRegistered": "You haven't registered a startup yet.",
+    "dbNotConnectedBody": "Set MONGODB_URI in .env.local to load your dashboard.",
+    "votesReceived": "Votes received",
+    "referralClicks": "Referral clicks",
+    "status": "Status",
+    "eliminated": "Eliminated",
+    "stillInIt": "Still in it",
+    "seed": "Seed"
+  },
+  "startup": {
+    "dbNotConnectedBody": "Set MONGODB_URI in .env.local to load this startup."
+  },
+  "auth": {
+    "googleBlurb": "Startup Clash GE uses Google to sign in — no separate password to manage.",
+    "continueWithGoogle": "Continue with Google"
+  },
+  "registerStartup": {
+    "closedBody": "There is no open registration window right now. Check back before the next tournament kicks off.",
+    "eyebrow": "Enter the arena",
+    "heading": "Register your startup",
+    "entryInfo": "One entry per account. {count}/{max} slots filled.",
+    "full": "This tournament is full.",
+    "dbNotConnectedBody": "Set MONGODB_URI in .env.local to open registration.",
+    "namePlaceholder": "Startup name",
+    "taglinePlaceholder": "One-line tagline",
+    "descriptionPlaceholder": "Description",
+    "logoUrlPlaceholder": "Logo URL",
+    "submitting": "Submitting...",
+    "submitCta": "Enter the tournament",
+    "registrationFailed": "Registration failed"
+  },
+  "leaderboard": {
+    "heading": "Hall of Fame",
+    "dbNotConnectedBody": "Set MONGODB_URI in .env.local to load the leaderboard.",
+    "noCompleted": "No completed tournaments yet."
+  },
+  "pricing": {
+    "heading": "Choose your growth plan",
+    "mostPopular": "Most popular"
+  },
+  "faq": {
+    "heading": "Before you launch"
+  },
+  "frontendSlides": {
+    "heading": "Frontend Slides",
+    "subtitle": "Every registered startup's pitch, one slide at a time.",
+    "inTheRunning": "In the running"
+  },
+  "footer": {
+    "tagline": "Enter the bracket, get voted on, grow through friendly competition.",
+    "platform": "Platform",
+    "tools": "Tools"
+  },
+  "chat": {
+    "title": "Startup Clash Concierge",
+    "prompt": "Ask about tournament rules, bracket sizing, or how to register your startup.",
+    "error": "Something went wrong. Please try again.",
+    "placeholder": "Ask a question...",
+    "send": "Send"
+  },
+  "home": {
+    "liveMatchups": "Live matchups",
+    "onTheRadar": "On the radar",
+    "liveMatchupEyebrow": "Live matchup",
+    "votesSoFar": "{a} — {b} votes so far"
   }
 }

@@ -18,9 +18,15 @@ export interface ITournament extends Document {
   bracketSize: number; // power of 2 rounded up from entrant count (includes byes)
   totalRounds: number; // log2(bracketSize)
   currentRound: number; // 0 = not started
-  roundDurationMinutes: number; // custom per-round duration
+  roundDurationMinutes: number; // custom per-round duration, defaults to 1 day
   entrants: Types.ObjectId[]; // Startup refs, in registration order
   champion?: Types.ObjectId; // Startup ref, set on completion
+  // Set to 1 while status is registration/seeding/in_progress, unset once
+  // completed/cancelled. A partial unique index on this (not on `status`
+  // itself — status has multiple "open" values, so a unique index on it alone
+  // wouldn't stop e.g. one registration + one in_progress tournament coexisting)
+  // is what actually enforces "only one active tournament at a time" atomically.
+  activeLock?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -41,11 +47,17 @@ const TournamentSchema = new Schema<ITournament>(
     bracketSize: { type: Number, default: 0 },
     totalRounds: { type: Number, default: 0 },
     currentRound: { type: Number, default: 0 },
-    roundDurationMinutes: { type: Number, required: true, default: 60 },
+    roundDurationMinutes: { type: Number, required: true, default: 1440 },
     entrants: [{ type: Schema.Types.ObjectId, ref: "Startup" }],
     champion: { type: Schema.Types.ObjectId, ref: "Startup" },
+    activeLock: { type: Number },
   },
   { timestamps: true }
+);
+
+TournamentSchema.index(
+  { activeLock: 1 },
+  { unique: true, partialFilterExpression: { activeLock: { $exists: true } } }
 );
 
 export const Tournament: Model<ITournament> =

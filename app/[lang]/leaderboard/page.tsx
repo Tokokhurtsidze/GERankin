@@ -1,11 +1,18 @@
+import { notFound } from "next/navigation";
 import { HallOfFame } from "@/components/marketing/HallOfFame";
+import { isLocale, type Locale } from "@/lib/i18n/config";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
 
-export default function LeaderboardPage() {
+export default async function LeaderboardPage({ params }: { params: Promise<{ lang: string }> }) {
+  const { lang } = await params;
+  if (!isLocale(lang)) notFound();
+  const dict = await getDictionary(lang as Locale);
+
   return (
     <section className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
-      <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">Winners</p>
-      <h1 className="mb-10 mt-2 text-center text-4xl font-bold tracking-tight">Hall of Fame</h1>
-      <HallOfFame />
+      <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">{dict.nav.winners}</p>
+      <h1 className="mb-10 mt-2 text-center text-4xl font-bold tracking-tight">{dict.leaderboard.heading}</h1>
+      <HallOfFame dict={dict} />
     </section>
   );
 }

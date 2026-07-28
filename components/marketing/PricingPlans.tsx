@@ -1,18 +1,36 @@
-import { PRICING_PLANS } from "@/lib/content/pricing";
+"use client";
 
-export function PricingPlans({ locale }: { locale: string }) {
+import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { getPricingPlans } from "@/lib/content/pricing";
+import { isLocale, type Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
+
+export function PricingPlans({ locale, dict }: { locale: string; dict: Dictionary }) {
+  const shouldReduceMotion = useReducedMotion();
+  const plans = getPricingPlans(isLocale(locale) ? (locale as Locale) : "en");
+
+  const itemVariants: Variants = {
+    hidden: shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-      {PRICING_PLANS.map((plan) => (
-        <div
+      {plans.map((plan, i) => (
+        <motion.div
           key={plan.name}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={itemVariants}
+          transition={{ duration: 0.5, delay: shouldReduceMotion ? 0 : i * 0.08, ease: [0.16, 1, 0.3, 1] }}
           className={`ink-border flex flex-col rounded-xl bg-surface p-6 ${
             plan.highlighted ? "ring-1 ring-accent" : ""
           }`}
         >
           {plan.highlighted && (
             <span className="mb-3 w-fit rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
-              Most popular
+              {dict.pricing.mostPopular}
             </span>
           )}
           <p className="font-semibold">{plan.name}</p>
@@ -38,7 +56,7 @@ export function PricingPlans({ locale }: { locale: string }) {
           >
             {plan.cta} →
           </a>
-        </div>
+        </motion.div>
       ))}
     </div>
   );

@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { dbConnect } from "@/lib/db/connect";
-import { Startup, ClickAnalytics } from "@/lib/db/models";
+import { Startup, Tournament, ClickAnalytics } from "@/lib/db/models";
+import { objectIdString } from "@/lib/db/object-id";
 
 const bodySchema = z.object({
-  startupId: z.string().min(1),
-  tournamentId: z.string().min(1),
+  startupId: objectIdString,
+  tournamentId: objectIdString,
   source: z.enum(["card", "showcase", "slides", "leaderboard"]),
 });
 
@@ -17,13 +18,21 @@ export async function POST(req: Request) {
   const { startupId, tournamentId, source } = parsed.data;
 
   await dbConnect();
+
+  const [startupExists, tournamentExists] = await Promise.all([
+    Startup.exists({ _id: startupId }),
+    Tournament.exists({ _id: tournamentId }),
+  ]);
+  if (!startupExists || !tournamentExists) {
+    return NextResponse.json({ error: "Unknown startup or tournament" }, { status: 404 });
+  }
+
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   const referrer = req.headers.get("referer") ?? undefined;
 
-  await Promise.all([
-    ClickAnalytics.create({ startup: startupId, tournament: tournamentId, source, ip, referrer }),
-    Startup.updateOne({ _id: startupId }, { $inc: { clickCount: 1 } }),
-  ]);
+  // ClickAnalytics.countDocuments is the single source of truth for click counts
+  // (see app/[lang]/dashboard/page.tsx) — no denormalized counter to keep in sync.
+  await ClickAnalytics.create({ startup: startupId, tournament: tournamentId, source, ip, referrer });
 
   return NextResponse.json({ ok: true });
 }

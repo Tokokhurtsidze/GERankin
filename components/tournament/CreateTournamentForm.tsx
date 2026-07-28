@@ -60,7 +60,7 @@ export function CreateTournamentForm() {
           type="number"
           min={1}
           max={1440}
-          defaultValue={60}
+          defaultValue={1440}
           required
           className="ink-border rounded-lg bg-bg px-3 py-2 font-normal"
         />

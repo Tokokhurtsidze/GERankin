@@ -1,7 +1,17 @@
 import { signIn } from "@/lib/auth/auth";
 
-export default async function LoginPage({ params }: { params: Promise<{ lang: string }> }) {
+export default async function LoginPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ lang: string }>;
+  searchParams: Promise<{ callbackUrl?: string }>;
+}) {
   const { lang } = await params;
+  const { callbackUrl } = await searchParams;
+  // Only allow same-app relative paths as a redirect target — never forward an
+  // absolute/external URL from a query param (open-redirect risk).
+  const redirectTo = callbackUrl?.startsWith(`/${lang}/`) || callbackUrl === `/${lang}` ? callbackUrl : `/${lang}`;
 
   return (
     <section className="mx-auto flex max-w-6xl flex-col items-center gap-8 px-4 py-16 sm:py-24">
@@ -12,7 +22,7 @@ export default async function LoginPage({ params }: { params: Promise<{ lang: st
       <form
         action={async () => {
           "use server";
-          await signIn("google", { redirectTo: `/${lang}` });
+          await signIn("google", { redirectTo });
         }}
       >
         <button

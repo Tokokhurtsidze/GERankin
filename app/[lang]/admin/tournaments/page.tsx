@@ -18,7 +18,9 @@ async function loadTournaments(): Promise<ITournament[] | null> {
 export default async function AdminTournamentsPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
   const session = await auth();
-  if (!session?.user) redirect(`/${lang}/auth/login`);
+  if (!session?.user) {
+    redirect(`/${lang}/auth/login?callbackUrl=${encodeURIComponent(`/${lang}/admin/tournaments`)}`);
+  }
   if (session.user.role !== "admin") redirect(`/${lang}`);
 
   const tournaments = await loadTournaments();

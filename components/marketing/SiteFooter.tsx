@@ -9,15 +9,13 @@ export function SiteFooter({ locale, dict }: { locale: string; dict: Dictionary 
           <p className="text-base font-bold">
             Startup Clash <span className="text-text-muted">GE</span>
           </p>
-          <p className="mt-2 max-w-xs text-sm text-text-muted">
-            Enter the bracket, get voted on, grow through friendly competition.
-          </p>
+          <p className="mt-2 max-w-xs text-sm text-text-muted">{dict.footer.tagline}</p>
           <p className="mt-4 text-xs text-text-muted">© {new Date().getFullYear()} Startup Clash GE</p>
         </div>
 
-        <div className="flex gap-16">
-          <div>
-            <p className="text-sm font-semibold">Platform</p>
+        <div className="flex flex-wrap gap-x-16 gap-y-6">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold">{dict.footer.platform}</p>
             <ul className="mt-3 flex flex-col gap-2 text-sm text-text-muted">
               <li>
                 <Link href={`/${locale}/auth/login`} className="hover:text-text">
@@ -36,8 +34,8 @@ export function SiteFooter({ locale, dict }: { locale: string; dict: Dictionary 
               </li>
             </ul>
           </div>
-          <div>
-            <p className="text-sm font-semibold">Tools</p>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold">{dict.footer.tools}</p>
             <ul className="mt-3 flex flex-col gap-2 text-sm text-text-muted">
               <li>
                 <Link href={`/${locale}#leaderboard`} className="hover:text-text">

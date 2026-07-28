@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth/auth";
 import { dbConnect } from "@/lib/db/connect";
-import { Startup, Tournament } from "@/lib/db/models";
+import { Startup, Tournament, User } from "@/lib/db/models";
+import { sendMail } from "@/lib/email/send";
 
 const bodySchema = z.object({
   tournamentId: z.string().min(1),
@@ -31,9 +32,6 @@ export async function POST(req: Request) {
   if (!tournament || tournament.status !== "registration") {
     return NextResponse.json({ error: "Registration window is closed" }, { status: 409 });
   }
-  if ((tournament.entrants?.length ?? 0) >= tournament.maxEntrants) {
-    return NextResponse.json({ error: "Tournament is full" }, { status: 409 });
-  }
 
   try {
     const startup = await Startup.create({
@@ -47,8 +45,31 @@ export async function POST(req: Request) {
       pitchDeckUrl: data.pitchDeckUrl,
     });
 
-    (tournament.entrants ??= []).push(startup._id);
-    await tournament.save();
+    // Atomic capacity check + push — a find-then-save here would race under
+    // concurrent registrations (lost update on `entrants`, cap bypassable).
+    const updated = await Tournament.findOneAndUpdate(
+      { _id: tournament._id, $expr: { $lt: [{ $size: { $ifNull: ["$entrants", []] } }, "$maxEntrants"] } },
+      { $push: { entrants: startup._id } }
+    );
+
+    if (!updated) {
+      // Cap was already hit by a concurrent request — roll back the orphaned Startup doc.
+      await Startup.deleteOne({ _id: startup._id });
+      return NextResponse.json({ error: "Tournament is full" }, { status: 409 });
+    }
+
+    const owner = await User.findById(session.user.id);
+    if (owner?.email) {
+      sendMail({
+        to: owner.email,
+        subject: `You're in — ${startup.name} entered ${tournament.name}`,
+        html: `
+          <p>Hey${owner.name ? ` ${owner.name}` : ""},</p>
+          <p><strong>${startup.name}</strong> is registered for <strong>${tournament.name}</strong>.</p>
+          <p>Registration closes at ${tournament.registrationClosesAt.toUTCString()}. Once it does, the bracket is seeded and round 1 goes live — check back to vote and rally votes for your match.</p>
+        `,
+      }).catch((err) => console.error("Failed to send registration confirmation email:", err));
+    }
 
     return NextResponse.json({ startupId: startup._id.toString() }, { status: 201 });
   } catch (err: unknown) {

@@ -4,8 +4,10 @@ import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { MobileNav } from "@/components/ui/MobileNav";
+import { ProfileMenu } from "@/components/ui/ProfileMenu";
 import { ChatWidget } from "@/components/chat/ChatWidget";
-import { SiteFooter } from "@/components/marketing/SiteFooter";
+import { ConditionalFooter } from "@/components/marketing/ConditionalFooter";
+import { HideOnFullscreenRoutes } from "@/components/ui/HideOnFullscreenRoutes";
 import { auth, signOut } from "@/lib/auth/auth";
 import { notFound } from "next/navigation";
 
@@ -29,8 +31,9 @@ export default async function LangLayout({
 
   return (
     <div lang={locale} className="flex min-h-full flex-col">
+      <HideOnFullscreenRoutes>
       <header className="sticky top-0 z-40 h-16 border-b border-border bg-bg/90 backdrop-blur-md">
-        <nav className="mx-auto flex h-full max-w-6xl items-center justify-between px-4 sm:px-6">
+        <nav className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link
             href={`/${locale}`}
             className="group flex shrink-0 items-baseline gap-1.5 whitespace-nowrap text-base font-bold tracking-tight"
@@ -39,9 +42,13 @@ export default async function LangLayout({
             Startup Clash <span className="text-text-muted">GE</span>
           </Link>
 
-          <div className="hidden items-center gap-6 whitespace-nowrap text-sm font-medium tracking-wide text-text-muted xl:flex">
+          <div className="hidden shrink-0 items-center gap-6 whitespace-nowrap text-sm font-medium tracking-wide text-text-muted xl:flex">
             <Link href={`/${locale}#bracket`} className="group relative py-1 transition-colors hover:text-text">
               {dict.nav.bracket}
+              <span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-accent transition-transform duration-200 group-hover:scale-x-100" />
+            </Link>
+            <Link href={`/${locale}#bracket-tree`} className="group relative py-1 transition-colors hover:text-text">
+              {dict.nav.fullBracket}
               <span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-accent transition-transform duration-200 group-hover:scale-x-100" />
             </Link>
             <Link href={`/${locale}#leaderboard`} className="group relative py-1 transition-colors hover:text-text">
@@ -62,7 +69,7 @@ export default async function LangLayout({
             </Link>
             {session?.user.role === "admin" && (
               <Link href={`/${locale}/admin/tournaments`} className="group relative py-1 transition-colors hover:text-text">
-                Organize
+                {dict.nav.organize}
                 <span className="absolute inset-x-0 -bottom-0.5 h-px origin-left scale-x-0 bg-accent transition-transform duration-200 group-hover:scale-x-100" />
               </Link>
             )}
@@ -70,43 +77,34 @@ export default async function LangLayout({
 
           <div className="flex items-center gap-3">
             <div className="hidden items-center gap-4 whitespace-nowrap xl:flex">
-              <Link
-                href={locale === "en" ? "/ka" : "/en"}
-                className="ink-border rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-text-muted transition-colors hover:border-accent hover:text-accent"
-              >
-                {locale === "en" ? "ka" : "en"}
-              </Link>
-
-              <div className="h-5 w-px bg-border" />
-
-              {session?.user ? (
+              {!session?.user && (
                 <>
                   <Link
-                    href={`/${locale}/dashboard`}
-                    aria-label="Dashboard"
-                    className="ink-border flex h-8 w-8 items-center justify-center rounded-full bg-surface text-sm font-semibold transition-transform hover:scale-105"
+                    href={locale === "en" ? "/ka" : "/en"}
+                    className="ink-border rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-text-muted transition-colors hover:border-accent hover:text-accent"
                   >
-                    {(session.user.name ?? "?").slice(0, 1).toUpperCase()}
+                    {locale === "en" ? "ka" : "en"}
                   </Link>
-                  <form
-                    action={async () => {
-                      "use server";
-                      await signOut({ redirectTo: `/${locale}` });
-                    }}
-                  >
-                    <button
-                      type="submit"
-                      className="flex items-center gap-1.5 text-sm font-medium text-text-muted transition-colors hover:text-text"
-                    >
-                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                        <path d="M16 17l5-5-5-5" />
-                        <path d="M21 12H9" />
-                      </svg>
-                      Sign out
-                    </button>
-                  </form>
+
+                  <div className="h-5 w-px bg-border" />
                 </>
+              )}
+
+              {session?.user ? (
+                <ProfileMenu
+                  locale={locale}
+                  initial={(session.user.name ?? "?").slice(0, 1).toUpperCase()}
+                  dashboardLabel={dict.nav.dashboard}
+                  otherLocaleHref={locale === "en" ? "/ka" : "/en"}
+                  otherLocaleLabel={locale === "en" ? "ქართული" : "English"}
+                  lightModeLabel={dict.nav.lightMode}
+                  darkModeLabel={dict.nav.darkMode}
+                  signOutLabel={dict.nav.signOut}
+                  signOutAction={async () => {
+                    "use server";
+                    await signOut({ redirectTo: `/${locale}` });
+                  }}
+                />
               ) : (
                 <Link href={`/${locale}/auth/login`} className="text-sm font-medium text-text-muted transition-colors hover:text-text">
                   {dict.nav.login}
@@ -120,11 +118,16 @@ export default async function LangLayout({
               </Link>
             </div>
 
-            <ThemeToggle />
+            <div className={session?.user ? "xl:hidden" : ""}>
+              <ThemeToggle />
+            </div>
 
             <MobileNav>
               <Link href={`/${locale}#bracket`} className="rounded-lg px-3 py-2.5 hover:bg-surface">
                 {dict.nav.bracket}
+              </Link>
+              <Link href={`/${locale}#bracket-tree`} className="rounded-lg px-3 py-2.5 hover:bg-surface">
+                {dict.nav.fullBracket}
               </Link>
               <Link href={`/${locale}#leaderboard`} className="rounded-lg px-3 py-2.5 hover:bg-surface">
                 {dict.nav.winners}
@@ -140,7 +143,7 @@ export default async function LangLayout({
               </Link>
               {session?.user.role === "admin" && (
                 <Link href={`/${locale}/admin/tournaments`} className="rounded-lg px-3 py-2.5 hover:bg-surface">
-                  Organize
+                  {dict.nav.organize}
                 </Link>
               )}
 
@@ -168,7 +171,7 @@ export default async function LangLayout({
                       type="submit"
                       className="w-full rounded-lg px-3 py-2.5 text-left text-text-muted hover:bg-surface hover:text-text"
                     >
-                      Sign out
+                      {dict.nav.signOut}
                     </button>
                   </form>
                 </>
@@ -188,10 +191,11 @@ export default async function LangLayout({
           </div>
         </nav>
       </header>
+      </HideOnFullscreenRoutes>
 
       <main className="flex-1">{children}</main>
 
-      <SiteFooter locale={locale} dict={dict} />
+      <ConditionalFooter locale={locale} dict={dict} />
 
       <ChatWidget />
     </div>

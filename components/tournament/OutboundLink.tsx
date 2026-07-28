@@ -6,12 +6,14 @@ export function OutboundLink({
   href,
   source,
   children,
+  className,
 }: {
   startupId: string;
   tournamentId: string;
   href: string;
   source: "card" | "showcase" | "slides" | "leaderboard";
   children: React.ReactNode;
+  className?: string;
 }) {
   function trackClick() {
     navigator.sendBeacon?.(
@@ -26,7 +28,7 @@ export function OutboundLink({
       target="_blank"
       rel="noopener noreferrer"
       onClick={trackClick}
-      className="inline-block rounded-lg bg-accent px-6 py-2.5 text-sm font-semibold text-white hover:bg-accent-hover"
+      className={className ?? "inline-block rounded-lg bg-accent px-6 py-2.5 text-sm font-semibold text-white hover:bg-accent-hover"}
     >
       {children}
     </a>

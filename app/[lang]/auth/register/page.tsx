@@ -14,7 +14,10 @@ export default async function RegisterStartupPage({
   const { lang } = await params;
   const { websiteUrl } = await searchParams;
   const session = await auth();
-  if (!session?.user) redirect(`/${lang}/auth/login`);
+  if (!session?.user) {
+    const callback = `/${lang}/auth/register${websiteUrl ? `?websiteUrl=${encodeURIComponent(websiteUrl)}` : ""}`;
+    redirect(`/${lang}/auth/login?callbackUrl=${encodeURIComponent(callback)}`);
+  }
 
   const tournament = await getActiveTournament().catch(() => "db_error" as const);
 

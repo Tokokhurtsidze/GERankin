@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { AvatarCluster } from "@/components/ui/AvatarCluster";
 
 export function FooterCtaBanner({
@@ -6,26 +9,50 @@ export function FooterCtaBanner({
   title,
   cta,
   founderCount,
+  joinWord,
   joinLabel,
 }: {
   locale: string;
   title: string;
   cta: string;
   founderCount: number;
+  joinWord: string;
   joinLabel: string;
 }) {
+  const shouldReduceMotion = useReducedMotion();
+
+  const container: Variants = {
+    hidden: {},
+    visible: { transition: { staggerChildren: shouldReduceMotion ? 0 : 0.08 } },
+  };
+
+  const item: Variants = {
+    hidden: shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 16 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
+  };
+
   return (
-    <div className="text-center">
-      <h2 className="mx-auto max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">{title}</h2>
-      <Link
-        href={`/${locale}/auth/register`}
-        className="mt-8 inline-block rounded-lg bg-accent px-8 py-3.5 text-sm font-semibold text-white hover:bg-accent-hover"
-      >
-        {cta} →
-      </Link>
-      <div className="mt-6 flex justify-center">
-        <AvatarCluster count={founderCount} label={joinLabel} />
-      </div>
-    </div>
+    <motion.div
+      className="text-center"
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, amount: 0.4 }}
+      variants={container}
+    >
+      <motion.h2 variants={item} className="mx-auto max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">
+        {title}
+      </motion.h2>
+      <motion.div variants={item} className="mt-8">
+        <Link
+          href={`/${locale}/auth/register`}
+          className="inline-block rounded-lg bg-accent px-8 py-3.5 text-sm font-semibold text-white hover:bg-accent-hover"
+        >
+          {cta} →
+        </Link>
+      </motion.div>
+      <motion.div variants={item} className="mt-6 flex justify-center">
+        <AvatarCluster count={founderCount} joinWord={joinWord} label={joinLabel} />
+      </motion.div>
+    </motion.div>
   );
 }

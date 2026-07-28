@@ -1,13 +1,18 @@
 {
   "nav": {
     "bracket": "ბრეკეტი",
+    "fullBracket": "სრული ბრეკეტი",
     "winners": "გამარჯვებულები",
     "faq": "კითხვები",
     "pricing": "ფასები",
     "slides": "სლაიდები",
     "dashboard": "პანელი",
     "login": "შესვლა",
-    "launch": "დაარეგისტრირე სტარტაპი"
+    "launch": "გაშვება",
+    "organize": "ორგანიზება",
+    "signOut": "გასვლა",
+    "lightMode": "ღია რეჟიმი",
+    "darkMode": "მუქი რეჟიმი"
   },
   "hero": {
     "eyebrow": "ყოველკვირეული ტურნირი",
@@ -18,6 +23,7 @@
     "urlPlaceholder": "shenistartapi.ge",
     "cta": "გაშვება",
     "ctaBadge": "უფასო",
+    "joinPrefix": "შემოგვიერთდი",
     "joinCount": "დამფუძნებელი არენაზე",
     "howItWorks": "როგორ მუშაობს",
     "championLabel": "მოქმედი ჩემპიონი"
@@ -30,7 +36,8 @@
     "step3Title": "3. საზოგადოება ხმას აძლევს",
     "step3Body": "ყოველი რაუნდი მიდის უკუთვლით. 50/50 ფრედში - დამატებითი დრო ან ადრეული ხმის პრიორიტეტი.",
     "step4Title": "4. ჩემპიონის გვირგვინდება",
-    "step4Body": "გამარჯვებული ჩნდება მთავარ გვერდზე - ლოგო, სლოგანი და პირდაპირი ბმული საიტზე."
+    "step4Body": "გამარჯვებული ჩნდება მთავარ გვერდზე - ლოგო, სლოგანი და პირდაპირი ბმული საიტზე.",
+    "label": "როგორ მუშაობს"
   },
   "registration": {
     "windowOpen": "რეგისტრაცია ღიაა",
@@ -43,6 +50,7 @@
     "roundLabel": "ბრეკეტი · რაუნდი",
     "endedRounds": "დასრულებული რაუნდები",
     "matches": "მატჩი",
+    "final": "ფინალი",
     "live": "პირდაპირი",
     "closesIn": "იხურება"
   },
@@ -52,10 +60,109 @@
     "votes": "ხმა",
     "overtime": "დამატებითი დრო",
     "comments": "დისკუსია",
-    "timeline": "ვადები"
+    "timeline": "ვადები",
+    "vs": "წინააღმდეგ",
+    "backToRound": "← რაუნდში დაბრუნება",
+    "notReadyTitle": "ეს მატჩი ჯერ არ არის მზად ხმის მისაცემად",
+    "votingClosedTitle": "ამ მატჩზე ხმის მიცემა არ არის ღია",
+    "roundClosedBody": "ეს რაუნდი უკვე დახურულია.",
+    "visit": "ეწვიე {name}-ს →",
+    "view": "ნახვა",
+    "voteCastFor": "ხმა მიცემულია {name}-სთვის",
+    "voteFailed": "ხმის მიცემა ვერ მოხერხდა",
+    "networkError": "ქსელის შეცდომა — გთხოვთ, სცადოთ ხელახლა",
+    "commentPlaceholder": "დაწერე რამე...",
+    "postCta": "გამოქვეყნება",
+    "noComments": "კომენტარი ჯერ არავის დაუტოვებია — იყავი პირველი.",
+    "anon": "ანონიმური",
+    "tbd": "უცნობია",
+    "botVerificationSkipped": "ბოტის შემოწმება გამოტოვებულია (არ არის კონფიგურირებული).",
+    "dbNotConnectedBody": "დააკონფიგურირეთ MONGODB_URI .env.local ფაილში ამ მატჩის ჩასატვირთად."
   },
   "footerCta": {
     "title": "შენმა კონკურენტებმა უკვე დაარეგისტრირეს საიტი",
     "cta": "გაუშვი უფასოდ"
+  },
+  "tournament": {
+    "statusRegistration": "რეგისტრაცია",
+    "statusSeeding": "დათესვა",
+    "statusInProgress": "მიმდინარეობს",
+    "statusCompleted": "დასრულებული",
+    "statusCancelled": "გაუქმებული",
+    "noLiveMatchesTitle": "ცოცხალი მატჩები არ არის",
+    "noLiveMatchesBody": "ეს რაუნდი ჯერ არ არის დათესილი — შემოწმეთ მალევე.",
+    "dbNotConnectedBody": "დააკონფიგურირეთ MONGODB_URI .env.local ფაილში ამ ტურნირის ჩასატვირთად.",
+    "noLiveBracketTitle": "ამჟამად ცოცხალი ბრეკეტი არ არის",
+    "noLiveBracketBody": "მატჩები გამოჩნდება, როგორც კი ტურნირი დაიწყება.",
+    "bracketDbNotConnectedBody": "დააკონფიგურირეთ MONGODB_URI .env.local ფაილში ბრეკეტის ჩასატვირთად.",
+    "viewFullBracket": "სრული ბრეკეტის ნახვა →"
+  },
+  "dashboard": {
+    "heading": "დამფუძნებლის პანელი",
+    "notRegistered": "შენ ჯერ არ დაარეგისტრირე სტარტაპი.",
+    "dbNotConnectedBody": "დააკონფიგურირეთ MONGODB_URI .env.local ფაილში პანელის ჩასატვირთად.",
+    "votesReceived": "მიღებული ხმები",
+    "referralClicks": "რეფერალური კლიკები",
+    "status": "სტატუსი",
+    "eliminated": "გამორიცხული",
+    "stillInIt": "თამაშშია",
+    "seed": "სათესლე ნომერი"
+  },
+  "startup": {
+    "dbNotConnectedBody": "დააკონფიგურირეთ MONGODB_URI .env.local ფაილში ამ სტარტაპის ჩასატვირთად."
+  },
+  "auth": {
+    "googleBlurb": "Startup Clash GE-ზე შესასვლელად გამოიყენება Google — დამატებითი პაროლი არ გჩირდება.",
+    "continueWithGoogle": "Google-ით შესვლა"
+  },
+  "registerStartup": {
+    "closedBody": "ამჟამად რეგისტრაციის ღია ფანჯარა არ არსებობს. შემოწმეთ შემდეგი ტურნირის დაწყებამდე.",
+    "eyebrow": "შედი არენაზე",
+    "heading": "დაარეგისტრირე შენი სტარტაპი",
+    "entryInfo": "ერთი ჩანაწერი თითო ანგარიშზე. {count}/{max} ადგილი დაკავებულია.",
+    "full": "ეს ტურნირი სავსეა.",
+    "dbNotConnectedBody": "დააკონფიგურირეთ MONGODB_URI .env.local ფაილში რეგისტრაციის გასახსნელად.",
+    "namePlaceholder": "სტარტაპის სახელი",
+    "taglinePlaceholder": "ერთსტრიქონიანი სლოგანი",
+    "descriptionPlaceholder": "აღწერა",
+    "logoUrlPlaceholder": "ლოგოს URL",
+    "submitting": "იგზავნება...",
+    "submitCta": "ტურნირში შესვლა",
+    "registrationFailed": "რეგისტრაცია ვერ მოხერხდა"
+  },
+  "leaderboard": {
+    "heading": "დიდების დარბაზი",
+    "dbNotConnectedBody": "დააკონფიგურირეთ MONGODB_URI .env.local ფაილში ლიდერბორდის ჩასატვირთად.",
+    "noCompleted": "დასრულებული ტურნირები ჯერ არ არის."
+  },
+  "pricing": {
+    "heading": "აირჩიე შენი განვითარების გეგმა",
+    "mostPopular": "ყველაზე პოპულარული"
+  },
+  "faq": {
+    "heading": "სანამ გაუშვებ"
+  },
+  "frontendSlides": {
+    "heading": "სლაიდები",
+    "subtitle": "ყველა დარეგისტრირებული სტარტაპის პრეზენტაცია, სლაიდი სლაიდზე.",
+    "inTheRunning": "თამაშშია"
+  },
+  "footer": {
+    "tagline": "შედი ბრეკეტში, მიიღე ხმები და გაიზარდე მეგობრული კონკურენციის მეშვეობით.",
+    "platform": "პლატფორმა",
+    "tools": "ინსტრუმენტები"
+  },
+  "chat": {
+    "title": "Startup Clash კონსიერჟი",
+    "prompt": "იკითხე ტურნირის წესების, ბრეკეტის ზომის ან სტარტაპის რეგისტრაციის შესახებ.",
+    "error": "რაღაც შეცდომა მოხდა. გთხოვთ, სცადოთ ხელახლა.",
+    "placeholder": "დაწერე კითხვა...",
+    "send": "გაგზავნა"
+  },
+  "home": {
+    "liveMatchups": "ცოცხალი მატჩები",
+    "onTheRadar": "რადარზე",
+    "liveMatchupEyebrow": "ცოცხალი მატჩი",
+    "votesSoFar": "{a} — {b} ხმა ამ დრომდე"
   }
 }

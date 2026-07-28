@@ -36,7 +36,7 @@ export function TurnstileWidget({ onVerify }: { onVerify: (token: string | null)
   }, [onVerify]);
 
   if (!SITE_KEY) {
-    return <p className="text-xs text-text-muted">Bot verification skipped (not configured).</p>;
+    return null;
   }
 
   return (

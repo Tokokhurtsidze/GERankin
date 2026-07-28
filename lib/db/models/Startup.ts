@@ -14,7 +14,6 @@ export interface IStartup extends Document {
   eliminated: boolean;
   eliminatedRound?: number;
   totalVotesReceived: number;
-  clickCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,7 +32,6 @@ const StartupSchema = new Schema<IStartup>(
     eliminated: { type: Boolean, default: false },
     eliminatedRound: { type: Number },
     totalVotesReceived: { type: Number, default: 0 },
-    clickCount: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

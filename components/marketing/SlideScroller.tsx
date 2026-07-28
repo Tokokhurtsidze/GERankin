@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 export interface SlideSectionMeta {
   id: string;
@@ -16,6 +16,10 @@ export interface SlideSectionMeta {
 export function SlideScroller({ sections, children }: { sections: SlideSectionMeta[]; children: ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const activeRef = useRef(active);
+  useEffect(() => {
+    activeRef.current = active;
+  }, [active]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -41,35 +45,36 @@ export function SlideScroller({ sections, children }: { sections: SlideSectionMe
     return () => observer.disconnect();
   }, [sections]);
 
-  function goTo(index: number) {
-    document.getElementById(sections[index].id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
+  const goTo = useCallback(
+    (index: number) => {
+      const section = sections[index];
+      if (!section) return;
+      document.getElementById(section.id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    },
+    [sections]
+  );
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       const target = e.target as HTMLElement | null;
       if (target && ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName)) return;
+      // Once the page has scrolled past the deck (into the full-tree section,
+      // footer, etc.) these keys should do normal page scrolling instead.
+      if (window.scrollY > 0) return;
+      if (sections.length === 0) return;
 
       if (e.key === "ArrowDown" || e.key === "PageDown") {
         e.preventDefault();
-        setActive((current) => {
-          const next = Math.min(current + 1, sections.length - 1);
-          goTo(next);
-          return next;
-        });
+        goTo(Math.min(activeRef.current + 1, sections.length - 1));
       } else if (e.key === "ArrowUp" || e.key === "PageUp") {
         e.preventDefault();
-        setActive((current) => {
-          const prev = Math.max(current - 1, 0);
-          goTo(prev);
-          return prev;
-        });
+        goTo(Math.max(activeRef.current - 1, 0));
       }
     }
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [sections]);
+  }, [sections, goTo]);
 
   return (
     <div className="relative">

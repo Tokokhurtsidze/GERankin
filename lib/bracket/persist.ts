@@ -2,10 +2,9 @@ import { Types } from "mongoose";
 import { Match, Startup, Tournament } from "@/lib/db/models";
 import { generateBracket, getNextSlot, type Entrant } from "./generate";
 import { resolveTie, type TieBreakConfig, DEFAULT_TIEBREAK_CONFIG } from "./tiebreak";
-import { scheduleRoundAdvance } from "@/lib/tournament/schedule";
 
 /**
- * Called once the 1-hour registration window closes (via QStash/cron).
+ * Called once the 1-hour registration window closes (via the /api/cron/sweep poll).
  * Assigns seeds in registration order, generates the full bracket skeleton,
  * writes round-1 Match docs (auto-completing byes), and flips the tournament
  * to "in_progress".
@@ -20,6 +19,7 @@ export async function startTournament(tournamentId: string) {
   const entrantIds = (tournament.entrants ?? []).map((id) => id.toString());
   if (entrantIds.length < tournament.minEntrants) {
     tournament.status = "cancelled";
+    tournament.activeLock = undefined;
     await tournament.save();
     return { cancelled: true as const, reason: "insufficient_entrants" };
   }
@@ -87,19 +87,11 @@ export async function startTournament(tournamentId: string) {
   tournament.status = "in_progress";
   await tournament.save();
 
-  try {
-    await scheduleRoundAdvance(tournamentId, new Date(now.getTime() + roundDurationMs));
-  } catch (err) {
-    // QStash not configured (e.g. local dev) — round 1 is live regardless, it just
-    // won't auto-advance; trigger /api/cron/advance-round manually instead.
-    console.warn("Failed to schedule QStash round-advance job:", err);
-  }
-
   return { cancelled: false as const, bracketSize: bracket.bracketSize, totalRounds: bracket.totalRounds };
 }
 
 /**
- * Called by cron once a round's endsAt has passed. Resolves every live match
+ * Called by /api/cron/sweep once a round's endsAt has passed. Resolves every live match
  * in the round (applying tie-break rules), advances winners into the next
  * round's Match docs, and either opens round+1 or marks the tournament complete.
  */
@@ -114,7 +106,12 @@ export async function advanceRound(tournamentId: string, tieBreakConfig: TieBrea
     tournament: tournament._id,
     round,
     status: { $in: ["live", "overtime"] },
-  });
+  }).populate<{ startupA?: { _id: Types.ObjectId; seed?: number }; startupB?: { _id: Types.ObjectId; seed?: number } }>(
+    [
+      { path: "startupA", select: "seed" },
+      { path: "startupB", select: "seed" },
+    ]
+  );
 
   const stillPending: typeof liveMatches = [];
 
@@ -125,7 +122,9 @@ export async function advanceRound(tournamentId: string, tieBreakConfig: TieBrea
         votesB: match.votesB,
         firstVoteAAt: match.firstVoteAAt ?? null,
         firstVoteBAt: match.firstVoteBAt ?? null,
-        overtimesUsed: match.isOvertime ? 1 : 0,
+        overtimesUsed: match.overtimesUsed ?? 0,
+        seedA: match.startupA?.seed ?? null,
+        seedB: match.startupB?.seed ?? null,
         now,
       },
       tieBreakConfig
@@ -133,7 +132,7 @@ export async function advanceRound(tournamentId: string, tieBreakConfig: TieBrea
 
     if (decision.outcome === "overtime") {
       match.status = "overtime";
-      match.isOvertime = true;
+      match.overtimesUsed = (match.overtimesUsed ?? 0) + 1;
       match.overtimeEndsAt = decision.endsAt;
       await match.save();
       stillPending.push(match);
@@ -141,14 +140,14 @@ export async function advanceRound(tournamentId: string, tieBreakConfig: TieBrea
     }
 
     if (decision.outcome === "no_votes_tie") {
-      // No signal at all (nobody voted) — keep it live a little longer rather
-      // than picking an arbitrary winner.
+      // Only reached if a seed is somehow missing on both sides (shouldn't happen
+      // post-seeding) — keep it live rather than picking an arbitrary winner.
       stillPending.push(match);
       continue;
     }
 
-    const winnerId = decision.side === "A" ? match.startupA : match.startupB;
-    const loserId = decision.side === "A" ? match.startupB : match.startupA;
+    const winnerId = decision.side === "A" ? match.startupA?._id : match.startupB?._id;
+    const loserId = decision.side === "A" ? match.startupB?._id : match.startupA?._id;
     match.winner = winnerId;
     match.status = "completed";
     await match.save();
@@ -174,6 +173,7 @@ export async function advanceRound(tournamentId: string, tieBreakConfig: TieBrea
     const finalMatch = await Match.findOne({ tournament: tournament._id, round });
     tournament.status = "completed";
     tournament.champion = finalMatch?.winner ?? undefined;
+    tournament.activeLock = undefined;
     await tournament.save();
     return { roundComplete: true as const, tournamentComplete: true as const };
   }
@@ -187,12 +187,6 @@ export async function advanceRound(tournamentId: string, tieBreakConfig: TieBrea
   );
   tournament.currentRound = nextRound;
   await tournament.save();
-
-  try {
-    await scheduleRoundAdvance(tournamentId, nextEndsAt);
-  } catch (err) {
-    console.warn("Failed to schedule QStash round-advance job:", err);
-  }
 
   return { roundComplete: true as const, tournamentComplete: false as const, nextRound };
 }

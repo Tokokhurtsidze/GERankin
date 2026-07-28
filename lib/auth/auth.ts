@@ -30,6 +30,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             provider: "google",
             emailVerified: new Date(),
           });
+        } else if (!internalUser.emailVerified) {
+          // Google already verified this address — backfill for accounts created
+          // before emailVerified existed, or created via another path.
+          internalUser.emailVerified = new Date();
+          await internalUser.save();
         }
         token.id = internalUser._id.toString();
         token.role = internalUser.role;

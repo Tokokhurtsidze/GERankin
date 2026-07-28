@@ -3,16 +3,19 @@ import { z } from "zod";
 import { auth } from "@/lib/auth/auth";
 import { dbConnect } from "@/lib/db/connect";
 import { Comment } from "@/lib/db/models";
+import { objectIdString } from "@/lib/db/object-id";
 
 const postSchema = z.object({
-  matchId: z.string().min(1),
+  matchId: objectIdString,
   body: z.string().min(1).max(1000),
-  parentId: z.string().optional(),
+  parentId: objectIdString.optional(),
 });
 
 export async function GET(req: Request) {
   const matchId = new URL(req.url).searchParams.get("matchId");
-  if (!matchId) return NextResponse.json({ error: "matchId is required" }, { status: 400 });
+  if (!matchId || !objectIdString.safeParse(matchId).success) {
+    return NextResponse.json({ error: "matchId is required" }, { status: 400 });
+  }
 
   await dbConnect();
   const comments = await Comment.find({ match: matchId, deleted: false })
@@ -36,12 +39,14 @@ export async function POST(req: Request) {
   }
 
   await dbConnect();
-  const comment = await Comment.create({
-    match: parsed.data.matchId,
-    author: session.user.id,
-    body: parsed.data.body,
-    parent: parsed.data.parentId,
-  });
+  const comment = await (
+    await Comment.create({
+      match: parsed.data.matchId,
+      author: session.user.id,
+      body: parsed.data.body,
+      parent: parsed.data.parentId,
+    })
+  ).populate("author", "name image");
 
   return NextResponse.json({ comment }, { status: 201 });
 }

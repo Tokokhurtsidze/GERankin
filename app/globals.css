@@ -55,6 +55,7 @@ html {
   background: var(--bg);
   scrollbar-width: none;
   -ms-overflow-style: none;
+  overflow-x: hidden;
 }
 
 html::-webkit-scrollbar {
@@ -67,6 +68,7 @@ body {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  overflow-x: hidden;
 }
 
 body::-webkit-scrollbar {
@@ -96,4 +98,37 @@ body::-webkit-scrollbar {
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/*
+ * Scroll-reveal for server-rendered lists (e.g. HallOfFame) that can't use
+ * framer-motion's whileInView without a client boundary. Progressive
+ * enhancement: browsers without scroll-driven animations just fade the item
+ * in once on load (still fine, never invisible); browsers that support
+ * `animation-timeline: view()` get a true "as it scrolls into view" reveal.
+ * Entirely opt-out under prefers-reduced-motion.
+ */
+@keyframes reveal-up-fade {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .reveal-up {
+    animation: reveal-up-fade 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--reveal-index, 0) * 80ms);
+  }
+
+  @supports (animation-timeline: view()) {
+    .reveal-up {
+      animation-timeline: view();
+      animation-range: entry 0% cover 30%;
+    }
+  }
 }

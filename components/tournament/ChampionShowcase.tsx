@@ -18,12 +18,17 @@ export function ChampionShowcase({
         height={56}
         className="ink-border h-14 w-14 rounded-lg object-cover"
       />
-      <div className="text-left">
+      <div className="min-w-0 text-left">
         <p className="text-xs font-semibold uppercase tracking-wide text-accent">{dict.hero.championLabel}</p>
-        <a href={startup.websiteUrl} target="_blank" rel="noopener noreferrer" className="font-semibold hover:underline">
+        <a
+          href={startup.websiteUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block truncate font-semibold hover:underline"
+        >
           {startup.name}
         </a>
-        <p className="text-sm text-text-muted">{startup.tagline}</p>
+        <p className="truncate text-sm text-text-muted">{startup.tagline}</p>
       </div>
     </div>
   );
