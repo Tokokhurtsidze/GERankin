@@ -12,7 +12,8 @@ export interface ITournament extends Document {
   name: string;
   status: TournamentStatus;
   registrationOpensAt: Date;
-  registrationClosesAt: Date; // registrationOpensAt + 1 hour
+  registrationClosesAt: Date; // registrationOpensAt + registrationWindowMinutes
+  registrationWindowMinutes: number; // custom registration window, defaults to 1 hour
   maxEntrants: number; // 32
   minEntrants: number; // 2
   bracketSize: number; // power of 2 rounded up from entrant count (includes byes)
@@ -42,6 +43,7 @@ const TournamentSchema = new Schema<ITournament>(
     },
     registrationOpensAt: { type: Date, required: true },
     registrationClosesAt: { type: Date, required: true },
+    registrationWindowMinutes: { type: Number, required: true, default: 60 },
     maxEntrants: { type: Number, default: 32, max: 32 },
     minEntrants: { type: Number, default: 2, min: 2 },
     bracketSize: { type: Number, default: 0 },

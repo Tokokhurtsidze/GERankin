@@ -24,6 +24,11 @@ export interface TreeMatch {
   votesB: number;
   status: string; // "live" | "overtime" | "pending" | "bye" | "completed"
   winnerId: string | null;
+  // null (not the raw new Date(0) placeholder pending matches carry) when not
+  // applicable — see lib/bracket/serialize.ts for the epoch->null conversion.
+  startsAt: string | null;
+  endsAt: string | null;
+  overtimeEndsAt: string | null;
 }
 
 export interface BracketTree {

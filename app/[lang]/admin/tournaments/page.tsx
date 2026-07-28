@@ -5,6 +5,7 @@ import { Tournament, type ITournament } from "@/lib/db/models";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { CreateTournamentForm } from "@/components/tournament/CreateTournamentForm";
 import { RegistrationCountdown } from "@/components/tournament/RegistrationCountdown";
+import { DeleteTournamentButton } from "@/components/admin/DeleteTournamentButton";
 
 async function loadTournaments(): Promise<ITournament[] | null> {
   try {
@@ -33,7 +34,7 @@ export default async function AdminTournamentsPage({ params }: { params: Promise
       <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">Admin</p>
       <h1 className="mb-2 mt-2 text-3xl font-bold tracking-tight">Organize Tournaments</h1>
       <p className="mb-8 text-sm text-text-muted">
-        Open a new 1-hour registration window (2-32 entrants, dynamic bracket, custom round length).
+        Open a new registration window (2-32 entrants, dynamic bracket, custom registration and round length).
       </p>
 
       {tournaments === null ? (
@@ -56,13 +57,16 @@ export default async function AdminTournamentsPage({ params }: { params: Promise
                 <div>
                   <p className="font-semibold">{t.name}</p>
                   <p className="text-xs uppercase tracking-wide text-text-muted">
-                    {t.status} · {t.entrants?.length ?? 0}/{t.maxEntrants} entrants · round length{" "}
-                    {t.roundDurationMinutes}m
+                    {t.status} · {t.entrants?.length ?? 0}/{t.maxEntrants} entrants · registration{" "}
+                    {t.registrationWindowMinutes}m · round length {t.roundDurationMinutes}m
                   </p>
                 </div>
-                {t.status === "registration" && (
-                  <RegistrationCountdown closesAt={t.registrationClosesAt.toISOString()} />
-                )}
+                <div className="flex items-center gap-3">
+                  {t.status === "registration" && (
+                    <RegistrationCountdown closesAt={t.registrationClosesAt.toISOString()} />
+                  )}
+                  <DeleteTournamentButton id={t._id.toString()} name={t.name} />
+                </div>
               </div>
             ))}
             {tournaments.length === 0 && (

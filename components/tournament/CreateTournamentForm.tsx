@@ -3,10 +3,79 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+type DurationUnit = "minutes" | "hours" | "days";
+
+const UNIT_TO_MINUTES: Record<DurationUnit, number> = {
+  minutes: 1,
+  hours: 60,
+  days: 1440,
+};
+
+// Backend caps every duration field at 1440 minutes (1 day) — clamp the numeric
+// input's max per unit so the value can never convert to something the API rejects.
+const MAX_MINUTES = 1440;
+function maxFor(unit: DurationUnit) {
+  return Math.floor(MAX_MINUTES / UNIT_TO_MINUTES[unit]);
+}
+
+function toMinutes(value: number, unit: DurationUnit) {
+  return Math.round(value * UNIT_TO_MINUTES[unit]);
+}
+
+function DurationField({
+  label,
+  value,
+  unit,
+  onValueChange,
+  onUnitChange,
+}: {
+  label: string;
+  value: number;
+  unit: DurationUnit;
+  onValueChange: (value: number) => void;
+  onUnitChange: (unit: DurationUnit) => void;
+}) {
+  return (
+    <label className="flex flex-col gap-1 text-sm font-semibold">
+      {label}
+      <div className="flex gap-2">
+        <input
+          type="number"
+          min={1}
+          max={maxFor(unit)}
+          value={value}
+          required
+          onChange={(e) => onValueChange(Number(e.target.value))}
+          className="ink-border w-full rounded-lg bg-bg px-3 py-2 font-normal"
+        />
+        <select
+          value={unit}
+          onChange={(e) => {
+            const nextUnit = e.target.value as DurationUnit;
+            onUnitChange(nextUnit);
+            const clampedMax = maxFor(nextUnit);
+            if (value > clampedMax) onValueChange(clampedMax);
+          }}
+          className="ink-border rounded-lg bg-bg px-3 py-2 font-normal"
+        >
+          <option value="minutes">Minutes</option>
+          <option value="hours">Hours</option>
+          <option value="days">Days</option>
+        </select>
+      </div>
+    </label>
+  );
+}
+
 export function CreateTournamentForm() {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+
+  const [registrationValue, setRegistrationValue] = useState(1);
+  const [registrationUnit, setRegistrationUnit] = useState<DurationUnit>("hours");
+  const [roundValue, setRoundValue] = useState(1);
+  const [roundUnit, setRoundUnit] = useState<DurationUnit>("days");
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -19,7 +88,8 @@ export function CreateTournamentForm() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: form.get("name"),
-        roundDurationMinutes: Number(form.get("roundDurationMinutes")),
+        registrationWindowMinutes: toMinutes(registrationValue, registrationUnit),
+        roundDurationMinutes: toMinutes(roundValue, roundUnit),
       }),
     });
 
@@ -53,24 +123,26 @@ export function CreateTournamentForm() {
           className="ink-border rounded-lg bg-bg px-3 py-2 font-normal"
         />
       </label>
-      <label className="flex flex-col gap-1 text-sm font-semibold">
-        Round duration (minutes)
-        <input
-          name="roundDurationMinutes"
-          type="number"
-          min={1}
-          max={1440}
-          defaultValue={1440}
-          required
-          className="ink-border rounded-lg bg-bg px-3 py-2 font-normal"
-        />
-      </label>
+      <DurationField
+        label="Registration window"
+        value={registrationValue}
+        unit={registrationUnit}
+        onValueChange={setRegistrationValue}
+        onUnitChange={setRegistrationUnit}
+      />
+      <DurationField
+        label="Round duration"
+        value={roundValue}
+        unit={roundUnit}
+        onValueChange={setRoundValue}
+        onUnitChange={setRoundUnit}
+      />
       <button
         type="submit"
         disabled={pending}
         className="rounded-lg bg-accent px-4 py-2.5 font-semibold text-white hover:bg-accent-hover disabled:opacity-50"
       >
-        {pending ? "Opening..." : "Open 1-hour registration window"}
+        {pending ? "Opening..." : "Open registration window"}
       </button>
     </form>
   );

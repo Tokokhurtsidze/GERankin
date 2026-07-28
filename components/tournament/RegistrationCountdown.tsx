@@ -1,19 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-
-function formatRemaining(ms: number) {
-  const totalSeconds = Math.max(0, Math.floor(ms / 1000));
-  const days = Math.floor(totalSeconds / 86400);
-  const hours = Math.floor((totalSeconds % 86400) / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  const pad = (n: number) => n.toString().padStart(2, "0");
-
-  if (days > 0) return `${pad(days)}:${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-  if (hours > 0) return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-  return `${pad(minutes)}:${pad(seconds)}`;
-}
+import { useCountdownMs, formatRemaining } from "@/lib/hooks/useCountdown";
 
 /** Live countdown, ticking client-side. */
 export function RegistrationCountdown({
@@ -24,12 +11,15 @@ export function RegistrationCountdown({
   closingLabel?: string;
 }) {
   const target = new Date(closesAt).getTime();
-  const [remainingMs, setRemainingMs] = useState(() => target - Date.now());
+  const remainingMs = useCountdownMs(target);
 
-  useEffect(() => {
-    const id = setInterval(() => setRemainingMs(target - Date.now()), 1000);
-    return () => clearInterval(id);
-  }, [target]);
+  if (remainingMs === null) {
+    return (
+      <span className="font-mono-score ink-border rounded-full bg-surface px-3 py-1 text-sm font-semibold tabular-nums">
+        --:--
+      </span>
+    );
+  }
 
   if (remainingMs <= 0) {
     return (

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { BracketTree as BracketTreeData, TreeMatch } from "@/lib/bracket/tree";
 import { BracketSlot } from "./BracketSlot";
+import { MatchTimer } from "./MatchTimer";
 
 export interface BracketMobileListProps {
   tree: BracketTreeData;
@@ -59,6 +60,13 @@ function MatchPair({
     );
   });
 
+  const isLiveMatch = match.status === "live" || match.status === "overtime";
+  const timer = isLiveMatch && (
+    <div className="flex justify-end">
+      <MatchTimer status={match.status} endsAt={match.endsAt} overtimeEndsAt={match.overtimeEndsAt} />
+    </div>
+  );
+
   // Both sides link to the same match — make the whole card one tap target
   // instead of just the small avatar icon (too easy to miss, especially on
   // touch/tablet).
@@ -68,12 +76,18 @@ function MatchPair({
         href={`/${locale}/tournament/${tournamentId}/match/${match.id}`}
         className="ink-border flex flex-col gap-1 rounded-md bg-surface p-1.5 transition-colors hover:bg-bg"
       >
+        {timer}
         {rows}
       </Link>
     );
   }
 
-  return <div className="ink-border flex flex-col gap-1 rounded-md bg-surface p-1.5">{rows}</div>;
+  return (
+    <div className="ink-border flex flex-col gap-1 rounded-md bg-surface p-1.5">
+      {timer}
+      {rows}
+    </div>
+  );
 }
 
 /**

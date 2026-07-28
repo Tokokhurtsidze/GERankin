@@ -1,21 +1,10 @@
 import { dbConnect } from "@/lib/db/connect";
 import { Match, type ITournament } from "@/lib/db/models";
-import { buildBracketTree, type TreeMatch, type TreeStartup } from "@/lib/bracket/tree";
+import { buildBracketTree } from "@/lib/bracket/tree";
+import { matchDocsToTreeMatches } from "@/lib/bracket/serialize";
 import { BracketTree } from "./BracketTree";
 import { ScaleToFitBracket } from "./ScaleToFitBracket";
 import { EmptyState } from "@/components/ui/EmptyState";
-
-interface PopulatedSide {
-  _id: unknown;
-  name: string;
-  logoUrl: string;
-}
-
-function toTreeSide(raw: unknown): TreeStartup | undefined {
-  const side = raw as PopulatedSide | undefined;
-  if (!side?.name) return undefined;
-  return { id: String(side._id), name: side.name, logoUrl: side.logoUrl };
-}
 
 /** Homepage teaser: the same mirrored bracket tree as the tournament page, non-interactive, scaled to fill its section. */
 export async function HomeBracketTree({
@@ -41,18 +30,7 @@ export async function HomeBracketTree({
       ])
       .lean();
 
-    const treeMatches: TreeMatch[] = docs.map((m) => ({
-      id: m._id.toString(),
-      round: m.round,
-      slot: m.slot,
-      nextMatchId: m.nextMatch?.toString() ?? null,
-      startupA: toTreeSide(m.startupA),
-      startupB: toTreeSide(m.startupB),
-      votesA: m.votesA,
-      votesB: m.votesB,
-      status: m.status,
-      winnerId: m.winner?.toString() ?? null,
-    }));
+    const treeMatches = matchDocsToTreeMatches(docs);
 
     tree = buildBracketTree(treeMatches, tournament.totalRounds);
   } catch {

@@ -2,6 +2,15 @@ import { Types } from "mongoose";
 import { Match, Startup, Tournament } from "@/lib/db/models";
 import { generateBracket, getNextSlot, type Entrant } from "./generate";
 import { resolveTie, type TieBreakConfig, DEFAULT_TIEBREAK_CONFIG } from "./tiebreak";
+import { notifyTournamentStarted, notifyRoundStarted, notifyMatchResults, notifyChampion } from "@/lib/email/notify";
+
+type NotifiableStartup = { _id: Types.ObjectId; name: string; owner?: { email?: string } | null };
+
+function toRecipients(startups: NotifiableStartup[]) {
+  return startups
+    .filter((s): s is NotifiableStartup & { owner: { email: string } } => Boolean(s.owner?.email))
+    .map((s) => ({ email: s.owner.email, startupName: s.name }));
+}
 
 /**
  * Called once the 1-hour registration window closes (via the /api/cron/sweep poll).
@@ -64,6 +73,7 @@ export async function startTournament(tournamentId: string) {
   }
 
   // Link nextMatch pointers and propagate bye winners into round 2 immediately.
+  const byeWinnerIds: string[] = [];
   for (const round of bracket.rounds) {
     for (const m of round) {
       if (m.round === bracket.totalRounds) continue; // final round has no next match
@@ -77,6 +87,7 @@ export async function startTournament(tournamentId: string) {
       if (m.isBye && m.byeWinner) {
         const field = next.side === "A" ? "startupA" : "startupB";
         await Match.updateOne({ _id: nextId }, { $set: { [field]: new Types.ObjectId(m.byeWinner.id) } });
+        byeWinnerIds.push(m.byeWinner.id);
       }
     }
   }
@@ -86,6 +97,20 @@ export async function startTournament(tournamentId: string) {
   tournament.currentRound = 1;
   tournament.status = "in_progress";
   await tournament.save();
+
+  const entrantStartups = await Startup.find({ _id: { $in: entrantIds } })
+    .select("name owner")
+    .populate<{ owner?: { email?: string } }>({ path: "owner", select: "email" });
+
+  await notifyTournamentStarted(toRecipients(entrantStartups), tournament.name);
+
+  const byeWinners = entrantStartups.filter((s) => byeWinnerIds.includes(s._id.toString()));
+  if (byeWinners.length > 0) {
+    await notifyMatchResults(
+      toRecipients(byeWinners).map((r) => ({ ...r, round: 1, advanced: true })),
+      tournament.name
+    );
+  }
 
   return { cancelled: false as const, bracketSize: bracket.bracketSize, totalRounds: bracket.totalRounds };
 }
@@ -101,19 +126,21 @@ export async function advanceRound(tournamentId: string, tieBreakConfig: TieBrea
   if (tournament.status !== "in_progress") throw new Error("Tournament is not in progress");
 
   const round = tournament.currentRound;
+  const isFinalRound = round === tournament.totalRounds;
   const now = new Date();
+  type PopulatedStartup = { _id: Types.ObjectId; seed?: number; name: string; owner?: { email?: string } };
   const liveMatches = await Match.find({
     tournament: tournament._id,
     round,
     status: { $in: ["live", "overtime"] },
-  }).populate<{ startupA?: { _id: Types.ObjectId; seed?: number }; startupB?: { _id: Types.ObjectId; seed?: number } }>(
-    [
-      { path: "startupA", select: "seed" },
-      { path: "startupB", select: "seed" },
-    ]
-  );
+  }).populate<{ startupA?: PopulatedStartup; startupB?: PopulatedStartup }>([
+    { path: "startupA", select: "seed name owner", populate: { path: "owner", select: "email" } },
+    { path: "startupB", select: "seed name owner", populate: { path: "owner", select: "email" } },
+  ]);
 
   const stillPending: typeof liveMatches = [];
+  const matchResultNotifications: { email: string; startupName: string; round: number; advanced: boolean }[] = [];
+  let championNotification: { email: string; startupName: string } | null = null;
 
   for (const match of liveMatches) {
     const decision = resolveTie(
@@ -146,8 +173,10 @@ export async function advanceRound(tournamentId: string, tieBreakConfig: TieBrea
       continue;
     }
 
-    const winnerId = decision.side === "A" ? match.startupA?._id : match.startupB?._id;
-    const loserId = decision.side === "A" ? match.startupB?._id : match.startupA?._id;
+    const winner = decision.side === "A" ? match.startupA : match.startupB;
+    const loser = decision.side === "A" ? match.startupB : match.startupA;
+    const winnerId = winner?._id;
+    const loserId = loser?._id;
     match.winner = winnerId;
     match.status = "completed";
     await match.save();
@@ -161,6 +190,24 @@ export async function advanceRound(tournamentId: string, tieBreakConfig: TieBrea
       const field = next.side === "A" ? "startupA" : "startupB";
       await Match.updateOne({ _id: match.nextMatch }, { $set: { [field]: winnerId } });
     }
+
+    if (loser?.owner?.email) {
+      matchResultNotifications.push({ email: loser.owner.email, startupName: loser.name, round, advanced: false });
+    }
+    if (winner?.owner?.email) {
+      if (isFinalRound) {
+        championNotification = { email: winner.owner.email, startupName: winner.name };
+      } else {
+        matchResultNotifications.push({ email: winner.owner.email, startupName: winner.name, round, advanced: true });
+      }
+    }
+  }
+
+  if (matchResultNotifications.length > 0) {
+    await notifyMatchResults(matchResultNotifications, tournament.name);
+  }
+  if (championNotification) {
+    await notifyChampion(championNotification.email, championNotification.startupName, tournament.name);
   }
 
   if (stillPending.length > 0) {
@@ -168,7 +215,6 @@ export async function advanceRound(tournamentId: string, tieBreakConfig: TieBrea
     return { roundComplete: false as const, pendingMatches: stillPending.length };
   }
 
-  const isFinalRound = round === tournament.totalRounds;
   if (isFinalRound) {
     const finalMatch = await Match.findOne({ tournament: tournament._id, round });
     tournament.status = "completed";
@@ -187,6 +233,20 @@ export async function advanceRound(tournamentId: string, tieBreakConfig: TieBrea
   );
   tournament.currentRound = nextRound;
   await tournament.save();
+
+  const nextRoundMatches = await Match.find({ tournament: tournament._id, round: nextRound }).populate<{
+    startupA?: PopulatedStartup;
+    startupB?: PopulatedStartup;
+  }>([
+    { path: "startupA", select: "name owner", populate: { path: "owner", select: "email" } },
+    { path: "startupB", select: "name owner", populate: { path: "owner", select: "email" } },
+  ]);
+  const nextRoundEntrants = toRecipients(
+    nextRoundMatches.flatMap((m) => [m.startupA, m.startupB].filter((s): s is PopulatedStartup => Boolean(s)))
+  );
+  if (nextRoundEntrants.length > 0) {
+    await notifyRoundStarted(nextRoundEntrants, tournament.name, nextRound);
+  }
 
   return { roundComplete: true as const, tournamentComplete: false as const, nextRound };
 }

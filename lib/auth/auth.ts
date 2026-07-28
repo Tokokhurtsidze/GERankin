@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import { dbConnect } from "@/lib/db/connect";
 import { User } from "@/lib/db/models";
+import { notifyWelcome } from "@/lib/email/notify";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
@@ -30,6 +31,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             provider: "google",
             emailVerified: new Date(),
           });
+          notifyWelcome(internalUser.email, internalUser.name).catch((err) =>
+            console.error("Failed to send welcome email:", err)
+          );
         } else if (!internalUser.emailVerified) {
           // Google already verified this address — backfill for accounts created
           // before emailVerified existed, or created via another path.

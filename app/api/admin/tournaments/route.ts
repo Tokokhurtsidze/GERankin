@@ -4,10 +4,9 @@ import { auth } from "@/lib/auth/auth";
 import { dbConnect } from "@/lib/db/connect";
 import { Tournament } from "@/lib/db/models";
 
-const REGISTRATION_WINDOW_MS = 60 * 60_000; // 1 hour, per spec
-
 const createSchema = z.object({
   name: z.string().min(2).max(120),
+  registrationWindowMinutes: z.number().int().min(1).max(1440).default(60),
   roundDurationMinutes: z.number().int().min(1).max(1440).default(1440),
 });
 
@@ -36,7 +35,9 @@ export async function POST(req: Request) {
   await dbConnect();
 
   const registrationOpensAt = new Date();
-  const registrationClosesAt = new Date(registrationOpensAt.getTime() + REGISTRATION_WINDOW_MS);
+  const registrationClosesAt = new Date(
+    registrationOpensAt.getTime() + parsed.data.registrationWindowMinutes * 60_000
+  );
 
   try {
     const tournament = await Tournament.create({
@@ -44,6 +45,7 @@ export async function POST(req: Request) {
       status: "registration",
       registrationOpensAt,
       registrationClosesAt,
+      registrationWindowMinutes: parsed.data.registrationWindowMinutes,
       roundDurationMinutes: parsed.data.roundDurationMinutes,
       activeLock: 1,
     });

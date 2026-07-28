@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { BracketTree as BracketTreeData, TreeMatch } from "@/lib/bracket/tree";
 import { BracketSlot, BRACKET_SLOT_SIZE } from "./BracketSlot";
+import { MatchTimer } from "./MatchTimer";
 
 /**
  * Connector-line / column-position geometry: pure math derived from
@@ -348,8 +349,14 @@ export function BracketTree({
       {layout.pairs.map(({ match, x, topY }) => {
         const a = sideProps(match, "A");
         const b = sideProps(match, "B");
+        const isLiveMatch = match.status === "live" || match.status === "overtime";
         return (
           <div key={match.id}>
+            {isLiveMatch && (
+              <div style={{ position: "absolute", left: x, top: topY - 14 }}>
+                <MatchTimer status={match.status} endsAt={match.endsAt} overtimeEndsAt={match.overtimeEndsAt} />
+              </div>
+            )}
             <div style={{ position: "absolute", left: x, top: topY }}>
               <BracketSlot
                 startup={a.startup}

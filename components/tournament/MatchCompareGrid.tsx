@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import useSWR from "swr";
 import Image from "next/image";
 import Link from "next/link";
 import { LiveWebsitePreview } from "./LiveWebsitePreview";
 import { OutboundLink } from "./OutboundLink";
 import { TurnstileWidget } from "./TurnstileWidget";
+import { fetcher } from "@/lib/api/fetcher";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 
 interface CompareSide {
@@ -25,6 +27,7 @@ function Column({
   token,
   pending,
   voted,
+  canVote,
   bumped,
   onVote,
   backHref,
@@ -39,6 +42,7 @@ function Column({
   token: string | null;
   pending: boolean;
   voted: "A" | "B" | null;
+  canVote: boolean;
   bumped: "A" | "B" | null;
   onVote: (side: "A" | "B") => void;
   backHref?: string;
@@ -92,7 +96,7 @@ function Column({
         <div className="flex shrink-0 items-center gap-1.5">
           <button
             onClick={() => onVote(sideKey)}
-            disabled={!token || pending || voted !== null}
+            disabled={!token || pending || voted !== null || !canVote}
             className={`flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors disabled:cursor-not-allowed ${
               voted === sideKey
                 ? "bg-accent text-white"
@@ -148,6 +152,30 @@ export function MatchCompareGrid({
   const [votesA, setVotesA] = useState(initialVotesA);
   const [votesB, setVotesB] = useState(initialVotesB);
   const [bumped, setBumped] = useState<"A" | "B" | null>(null);
+
+  // Polls the authoritative vote count/status so other users' votes and a round
+  // closing while this page is open both show up without a manual refresh. The
+  // voter's own optimistic +1 (below) gets naturally reconciled by the next poll.
+  const { data: liveData } = useSWR<{ votesA: number; votesB: number; status: string }>(
+    `/api/match/${matchId}`,
+    fetcher,
+    { refreshInterval: 3000 }
+  );
+
+  useEffect(() => {
+    if (!liveData) return;
+    // Deferred (not called synchronously in the effect body) to satisfy the
+    // react-hooks/set-state-in-effect lint rule.
+    const timeout = setTimeout(() => {
+      setVotesA(liveData.votesA);
+      setVotesB(liveData.votesB);
+    }, 0);
+    return () => clearTimeout(timeout);
+  }, [liveData]);
+
+  // The page only renders this component for a live/overtime match, so default
+  // to votable until the first poll lands.
+  const canVote = liveData ? liveData.status === "live" || liveData.status === "overtime" : true;
   // Which side is widened to give its live preview enough room to render a
   // tablet/desktop layout instead of being squeezed into a 50/50 split.
   const [expanded, setExpanded] = useState<"A" | "B" | null>(null);
@@ -201,6 +229,7 @@ export function MatchCompareGrid({
             token={token}
             pending={pending}
             voted={voted}
+            canVote={canVote}
             bumped={bumped}
             onVote={castVote}
             backHref={backHref}
@@ -217,6 +246,7 @@ export function MatchCompareGrid({
             token={token}
             pending={pending}
             voted={voted}
+            canVote={canVote}
             bumped={bumped}
             onVote={castVote}
             reverseOnMobile
