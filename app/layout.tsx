@@ -13,9 +13,24 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const description = "The Georgian startup knockout tournament — vote round by round, crown a champion.";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Startup Clash GE",
-  description: "The Georgian startup knockout tournament — vote round by round, crown a champion.",
+  description,
+  openGraph: {
+    title: "Startup Clash GE",
+    description,
+    siteName: "Startup Clash GE",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Startup Clash GE",
+    description,
+  },
 };
 
 export default function RootLayout({

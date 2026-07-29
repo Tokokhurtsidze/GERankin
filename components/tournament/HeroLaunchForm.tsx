@@ -28,7 +28,7 @@ export function HeroLaunchForm({
         value={url}
         onChange={(e) => setUrl(e.target.value)}
         placeholder={placeholder}
-        className="ink-border h-12 flex-1 rounded-lg bg-surface px-4 text-sm placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+        className="ink-border h-12 w-full flex-1 rounded-lg bg-surface px-4 text-sm placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
       />
       <button
         type="submit"
