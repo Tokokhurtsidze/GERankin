@@ -14,7 +14,6 @@ import { HallOfFame } from "@/components/marketing/HallOfFame";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import { SlideScroller, type SlideSectionMeta } from "@/components/marketing/SlideScroller";
-import { SiteFooter } from "@/components/marketing/SiteFooter";
 import { SlideDeck, type Slide } from "@/components/slides/SlideDeck";
 import { notFound } from "next/navigation";
 
@@ -80,7 +79,6 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
     { id: "faq", label: dict.nav.faq },
     { id: "cta", label: "Get started" },
     { id: "bracket-tree", label: dict.nav.fullBracket },
-    { id: "footer", label: "Footer" },
   ];
 
   return (
@@ -218,11 +216,6 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
               />
             </div>
           </div>
-        </section>
-
-        {/* Footer, as the deck's final slide */}
-        <section id="footer" className={`${SLIDE_CLASS} !justify-end !py-0`}>
-          <SiteFooter locale={locale} dict={dict} />
         </section>
     </SlideScroller>
   );
