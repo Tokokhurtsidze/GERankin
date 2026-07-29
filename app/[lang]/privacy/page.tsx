@@ -68,12 +68,21 @@ const SECTIONS: Record<Locale, { heading: string; updated: string; sections: { t
   },
 };
 
+const DESCRIPTIONS: Record<Locale, string> = {
+  en: "How Startup Clash GE collects, uses, and protects your account, startup, and voting data.",
+  ka: "როგორ აგროვებს, იყენებს და იცავს Startup Clash GE თქვენს ანგარიშის, სტარტაპისა და ხმის მონაცემებს.",
+};
+
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
   const locale = lang as Locale;
 
-  return { alternates: localeAlternates(locale, "/privacy") };
+  return {
+    title: `${SECTIONS[locale].heading} — Startup Clash GE`,
+    description: DESCRIPTIONS[locale],
+    alternates: localeAlternates(locale, "/privacy"),
+  };
 }
 
 export default async function PrivacyPage({ params }: { params: Promise<{ lang: string }> }) {

@@ -5,12 +5,26 @@ import { isLocale, type Locale } from "@/lib/i18n/config";
 import { localeAlternates } from "@/lib/i18n/alternates";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
+const TITLES: Record<Locale, string> = {
+  en: "Hall of Fame — Startup Clash GE",
+  ka: "დიდების დარბაზი — Startup Clash GE",
+};
+
+const DESCRIPTIONS: Record<Locale, string> = {
+  en: "Past tournament champions and completed knockout brackets from the Georgian startup community.",
+  ka: "წინა ტურნირების ჩემპიონები და დასრულებული ბრეკეტები ქართული სტარტაპების საზოგადოებიდან.",
+};
+
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
   const locale = lang as Locale;
 
-  return { alternates: localeAlternates(locale, "/leaderboard") };
+  return {
+    title: TITLES[locale],
+    description: DESCRIPTIONS[locale],
+    alternates: localeAlternates(locale, "/leaderboard"),
+  };
 }
 
 export default async function LeaderboardPage({ params }: { params: Promise<{ lang: string }> }) {

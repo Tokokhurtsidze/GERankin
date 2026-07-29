@@ -84,12 +84,21 @@ const SECTIONS: Record<Locale, { heading: string; updated: string; sections: { t
   },
 };
 
+const DESCRIPTIONS: Record<Locale, string> = {
+  en: "The rules for registering a startup, voting fairly, and using the Startup Clash GE platform.",
+  ka: "წესები სტარტაპის რეგისტრაციის, სამართლიანი ხმის მიცემისა და Startup Clash GE პლატფორმის გამოყენებისთვის.",
+};
+
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
   const locale = lang as Locale;
 
-  return { alternates: localeAlternates(locale, "/terms") };
+  return {
+    title: `${SECTIONS[locale].heading} — Startup Clash GE`,
+    description: DESCRIPTIONS[locale],
+    alternates: localeAlternates(locale, "/terms"),
+  };
 }
 
 export default async function TermsPage({ params }: { params: Promise<{ lang: string }> }) {
