@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { isLocale, type Locale } from "@/lib/i18n/config";
+import { defaultLocale, isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { MobileNav } from "@/components/ui/MobileNav";
@@ -11,9 +11,27 @@ import { HideOnFullscreenRoutes } from "@/components/ui/HideOnFullscreenRoutes";
 import { auth, signOut } from "@/lib/auth/auth";
 import { notFound } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Startup Clash GE",
+const DESCRIPTIONS: Record<Locale, string> = {
+  en: "The Georgian startup knockout tournament — vote round by round, crown a champion.",
+  ka: "ქართული სტარტაპების ნოკაუტ ტურნირი — მისეცი ხმა რაუნდ-რაუნდზე, დააგვირგვინე ჩემპიონი.",
 };
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await params;
+  const locale = isLocale(lang) ? (lang as Locale) : defaultLocale;
+
+  return {
+    title: "Startup Clash GE",
+    description: DESCRIPTIONS[locale],
+    alternates: {
+      canonical: `/${locale}`,
+      languages: { en: "/en", ka: "/ka" },
+    },
+    verification: {
+      google: process.env.GOOGLE_SITE_VERIFICATION,
+    },
+  };
+}
 
 export default async function LangLayout({
   children,
