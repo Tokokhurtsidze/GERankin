@@ -105,27 +105,34 @@ export async function POST(req: Request) {
 
   // Auto-advance support: find the next live/overtime sibling matchup in this
   // round that this voter hasn't voted in yet, so the client can jump straight
-  // there instead of stranding the user on the match they just voted in.
-  const siblingMatches = await Match.find({
-    tournament: match.tournament,
-    round: match.round,
-    status: { $in: ["live", "overtime"] },
-  })
-    .select("_id slot")
-    .lean();
+  // there instead of stranding the user on the match they just voted in. The
+  // vote itself already committed above, so a failure here must never surface
+  // as a vote failure to the client — degrade to no auto-advance instead.
+  let nextMatchId: string | null = null;
+  try {
+    const siblingMatches = await Match.find({
+      tournament: match.tournament,
+      round: match.round,
+      status: { $in: ["live", "overtime"] },
+    })
+      .select("_id slot")
+      .lean();
 
-  const siblingIds = siblingMatches.map((m) => m._id.toString());
-  const votedDocs = await Vote.find({
-    voter: session.user.id,
-    match: { $in: siblingIds },
-  })
-    .select("match")
-    .lean();
+    const siblingIds = siblingMatches.map((m) => m._id.toString());
+    const votedDocs = await Vote.find({
+      voter: session.user.id,
+      match: { $in: siblingIds },
+    })
+      .select("match")
+      .lean();
 
-  const nextMatchId = pickNextMatch(
-    siblingMatches.map((m) => ({ id: m._id.toString(), slot: m.slot })),
-    votedDocs.map((v) => v.match.toString())
-  );
+    nextMatchId = pickNextMatch(
+      siblingMatches.map((m, i) => ({ id: siblingIds[i], slot: m.slot })),
+      votedDocs.map((v) => v.match.toString())
+    );
+  } catch (err) {
+    console.error("vote auto-advance lookup failed (vote already committed):", err);
+  }
 
   return NextResponse.json({ ok: true, nextMatchId });
 }

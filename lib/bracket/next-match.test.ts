@@ -24,6 +24,10 @@ describe("pickNextMatch", () => {
     expect(pickNextMatch(siblings, [])).toBe("match-0");
   });
 
+  it("returns null when there are no siblings at all", () => {
+    expect(pickNextMatch([], [])).toBeNull();
+  });
+
   it("does not mutate the input siblings array order", () => {
     const unsorted: MatchSlotRef[] = [
       { id: "match-2", slot: 2 },

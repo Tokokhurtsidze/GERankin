@@ -209,18 +209,18 @@ export function MatchCompareGrid({
         setError(json.error ?? dict.voteFailed);
         return;
       }
-      const json = await res.json();
+      const json = await res.json().catch(() => ({} as { nextMatchId?: string | null }));
       setVoted(side);
       if (side === "A") setVotesA((v) => v + 1);
       else setVotesB((v) => v + 1);
       setBumped(side);
       setTimeout(() => {
         setBumped(null);
-        if (json.nextMatchId) {
-          router.push(`/${lang}/tournament/${tournamentId}/match/${json.nextMatchId}`);
-        } else if (backHref) {
-          router.push(backHref);
-        }
+        router.push(
+          json.nextMatchId
+            ? `/${lang}/tournament/${tournamentId}/match/${json.nextMatchId}`
+            : (backHref ?? `/${lang}/tournament/${tournamentId}`)
+        );
       }, 500);
     } catch {
       setPending(false);
