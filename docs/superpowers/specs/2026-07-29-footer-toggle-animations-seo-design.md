@@ -59,21 +59,34 @@ Four polish items requested ahead of launch:
 
 ### 2. Home-page scroll reveals
 
-Add `className="reveal-up"` (plus `style={{ "--reveal-index": i }}` for grouped/repeated items,
-matching `HallOfFame`'s existing pattern) to the content wrapper of each home-page section that
-doesn't already have it:
+**Correction from initial read:** `HowItWorks`, `PricingPlans`, `Accordion` (used by `FaqAccordion`),
+and `FooterCtaBanner` are already client components with framer-motion `whileInView` fade+rise
+reveals (same easing/duration/stagger style as `.reveal-up`). These are untouched — re-animating
+them would double up. `SlideDeck`'s framer-motion usage is a carousel transition between slides,
+not a scroll-entry reveal, and is also untouched (out of scope).
 
-- Hero text block (eyebrow/title/subtitle/form/avatar-cluster/champion-showcase group)
-- `HowItWorks` steps (stagger per step)
-- Bracket section header + `LiveBracketSection` wrapper
-- Slides section header + `SlideDeck` wrapper
-- `PricingPlans` header + individual plan cards (stagger per card)
-- FAQ header + `FaqAccordion` wrapper
-- `FooterCtaBanner`
-- Bracket-tree section header + `HomeBracketTree` wrapper
+What's actually bare: the hero content block, every section's header (eyebrow + heading) text in
+`app/[lang]/page.tsx`, and the two bracket components (`LiveBracketSection`, `HomeBracketTree`) —
+both `async` server components (they call `dbConnect`), so `.reveal-up` (CSS-only, no client
+boundary needed) is the right tool, consistent with why the codebase already chose it for
+`HallOfFame`.
+
+Add `className="reveal-up"` (plus `style={{ "--reveal-index": i }}` for staggered groups, matching
+`HallOfFame`'s existing pattern) to:
+
+- Hero content block's individual pieces in `app/[lang]/page.tsx` — eyebrow, heading, subtitle,
+  `HeroLaunchForm` wrapper, avatar cluster, champion-showcase block, registration-countdown card
+  — each its own `--reveal-index` (0 through 5) for a cascading entrance.
+- The eyebrow+heading pair immediately above: the bracket section, the slides section, the
+  leaderboard section (above `HallOfFame`, which keeps its own internal reveal untouched), the
+  pricing section, the FAQ section, and the bracket-tree section — one `reveal-up` per pair, no
+  stagger needed (each is two lines of text, not a list).
+- `LiveBracketSection`'s returned wrapper `<div>` (the "Round N" label + match card list + "View
+  full bracket" link) — single `reveal-up` on the outer div, no stagger (match cards aren't
+  pre-known at this level in a way worth staggering).
+- `HomeBracketTree`'s `<ScaleToFitBracket>` wrapper — single `reveal-up`, no stagger.
 
 No changes to `globals.css` — the `.reveal-up` keyframes/media-query already there are reused as-is.
-`HallOfFame`'s own internal `reveal-up` usage is untouched.
 
 ### 3. Hero input restyle
 
