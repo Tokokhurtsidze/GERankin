@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-const description = "The Georgian startup knockout tournament — vote round by round, crown a champion.";
+export const description = "The Georgian startup knockout tournament — vote round by round, crown a champion.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

@@ -1,4 +1,6 @@
+import type { Metadata } from "next";
 import { isLocale, type Locale } from "@/lib/i18n/config";
+import { localeAlternates } from "@/lib/i18n/alternates";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getActiveTournament, getReigningChampion, getFounderCount } from "@/lib/tournament/queries";
 import { Match } from "@/lib/db/models";
@@ -43,6 +45,14 @@ async function buildSlides(locale: string, tournamentId?: string, currentRound?:
 
 const SLIDE_CLASS =
   "no-scrollbar h-full w-full snap-start flex flex-col items-center justify-center overflow-y-auto px-4 py-12 sm:px-6";
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isLocale(lang)) notFound();
+  const locale = lang as Locale;
+
+  return { alternates: localeAlternates(locale, "") };
+}
 
 export default async function HomePage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;

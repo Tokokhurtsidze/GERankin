@@ -10,22 +10,31 @@ import { ConditionalFooter } from "@/components/marketing/ConditionalFooter";
 import { HideOnFullscreenRoutes } from "@/components/ui/HideOnFullscreenRoutes";
 import { auth, signOut } from "@/lib/auth/auth";
 import { notFound } from "next/navigation";
+import { description as enDescription } from "@/app/layout";
 
 const DESCRIPTIONS: Record<Locale, string> = {
-  en: "The Georgian startup knockout tournament — vote round by round, crown a champion.",
-  ka: "ქართული სტარტაპების ნოკაუტ ტურნირი — მისეცი ხმა რაუნდ-რაუნდზე, დააგვირგვინე ჩემპიონი.",
+  en: enDescription,
+  ka: "ქართული სტარტაპების ნოკაუტ ტურნირი — მიეცი ხმა რაუნდ-რაუნდზე, დააგვირგვინე ჩემპიონი.",
 };
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
-  const locale = isLocale(lang) ? (lang as Locale) : defaultLocale;
+  const locale = isLocale(lang) ? lang : defaultLocale;
+  const description = DESCRIPTIONS[locale];
 
   return {
     title: "Startup Clash GE",
-    description: DESCRIPTIONS[locale],
-    alternates: {
-      canonical: `/${locale}`,
-      languages: { en: "/en", ka: "/ka" },
+    description,
+    openGraph: {
+      title: "Startup Clash GE",
+      description,
+      siteName: "Startup Clash GE",
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "Startup Clash GE",
+      description,
     },
     verification: {
       google: process.env.GOOGLE_SITE_VERIFICATION,
@@ -43,7 +52,7 @@ export default async function LangLayout({
   const { lang } = await params;
   if (!isLocale(lang)) notFound();
 
-  const locale = lang as Locale;
+  const locale = lang;
   const dict = await getDictionary(locale);
   const session = await auth().catch(() => null);
 

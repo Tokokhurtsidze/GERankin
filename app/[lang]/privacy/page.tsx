@@ -1,5 +1,7 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isLocale, type Locale } from "@/lib/i18n/config";
+import { localeAlternates } from "@/lib/i18n/alternates";
 
 const CONTACT_EMAIL = "khurtsidzetoko@gmail.com";
 
@@ -65,6 +67,14 @@ const SECTIONS: Record<Locale, { heading: string; updated: string; sections: { t
     ],
   },
 };
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isLocale(lang)) notFound();
+  const locale = lang as Locale;
+
+  return { alternates: localeAlternates(locale, "/privacy") };
+}
 
 export default async function PrivacyPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;

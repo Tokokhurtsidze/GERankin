@@ -1,7 +1,17 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { isLocale, type Locale } from "@/lib/i18n/config";
+import { localeAlternates } from "@/lib/i18n/alternates";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+
+export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
+  const { lang } = await params;
+  if (!isLocale(lang)) notFound();
+  const locale = lang as Locale;
+
+  return { alternates: localeAlternates(locale, "/pricing") };
+}
 
 export default async function PricingPage({ params }: { params: Promise<{ lang: string }> }) {
   const { lang } = await params;
