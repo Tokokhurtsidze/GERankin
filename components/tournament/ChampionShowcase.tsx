@@ -1,13 +1,17 @@
 import Image from "next/image";
 import type { IStartup } from "@/lib/db/models";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import type { Locale } from "@/lib/i18n/config";
+import { pickLocalized } from "@/lib/i18n/localized";
 
 export function ChampionShowcase({
   startup,
   dict,
+  locale,
 }: {
   startup: Pick<IStartup, "name" | "logoUrl" | "websiteUrl" | "tagline">;
   dict: Dictionary;
+  locale: Locale;
 }) {
   return (
     <div className="ink-border flex items-center gap-4 rounded-xl bg-surface px-6 py-4">
@@ -28,7 +32,7 @@ export function ChampionShowcase({
         >
           {startup.name}
         </a>
-        <p className="truncate text-sm text-text-muted">{startup.tagline}</p>
+        <p className="truncate text-sm text-text-muted">{pickLocalized(startup.tagline, locale)}</p>
       </div>
     </div>
   );

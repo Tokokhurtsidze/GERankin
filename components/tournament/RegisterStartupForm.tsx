@@ -32,8 +32,8 @@ export function RegisterStartupForm({
     const body = {
       tournamentId,
       name: form.get("name"),
-      tagline: form.get("tagline"),
-      description: form.get("description"),
+      tagline: { en: form.get("tagline_en"), ka: form.get("tagline_ka") },
+      description: { en: form.get("description_en"), ka: form.get("description_ka") },
       logoUrl: normalizeUrl(String(form.get("logoUrl") ?? "")),
       websiteUrl: normalizeUrl(String(form.get("websiteUrl") ?? "")),
     };
@@ -65,8 +65,17 @@ export function RegisterStartupForm({
     <form onSubmit={handleSubmit} className="flex flex-col gap-4">
       {error && <p className="text-sm font-medium text-red-600">{error}</p>}
       <input name="name" placeholder="Startup name" required maxLength={80} className={inputClass} />
-      <input name="tagline" placeholder="One-line tagline" required maxLength={160} className={inputClass} />
-      <textarea name="description" placeholder="Description" required rows={4} className={inputClass} />
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <input name="tagline_en" placeholder="One-line tagline (English)" required maxLength={160} className={inputClass} />
+        <input name="tagline_ka" placeholder="მოკლე სლოგანი (ქართულად)" required maxLength={160} className={inputClass} />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <textarea name="description_en" placeholder="Description (English)" required rows={4} className={inputClass} />
+        <textarea name="description_ka" placeholder="აღწერა (ქართულად)" required rows={4} className={inputClass} />
+      </div>
+
       <input name="logoUrl" placeholder="Logo URL" required className={inputClass} />
       <input
         name="websiteUrl"

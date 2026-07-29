@@ -52,6 +52,16 @@ export function SiteFooter({ locale, dict }: { locale: string; dict: Dictionary 
                   {dict.nav.faq}
                 </Link>
               </li>
+              <li>
+                <Link href={`/${locale}/privacy`} className="hover:text-text">
+                  {locale === "ka" ? "კონფიდენციალურობა" : "Privacy"}
+                </Link>
+              </li>
+              <li>
+                <Link href={`/${locale}/terms`} className="hover:text-text">
+                  {locale === "ka" ? "პირობები" : "Terms"}
+                </Link>
+              </li>
             </ul>
           </div>
         </div>

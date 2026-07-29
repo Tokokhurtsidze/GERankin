@@ -3,6 +3,8 @@ import { auth } from "@/lib/auth/auth";
 import { dbConnect } from "@/lib/db/connect";
 import { Startup, ClickAnalytics, type IStartup } from "@/lib/db/models";
 import { EmptyState } from "@/components/ui/EmptyState";
+import type { Locale } from "@/lib/i18n/config";
+import { pickLocalized } from "@/lib/i18n/localized";
 
 async function loadDashboardData(ownerId: string): Promise<{ startup: IStartup | null; clickCount: number } | null> {
   try {
@@ -33,7 +35,7 @@ export default async function DashboardPage({ params }: { params: Promise<{ lang
       ) : (
         <div className="ink-border hard-shadow-sm rounded-xl bg-surface p-6">
           <h2 className="text-xl font-semibold">{data.startup.name}</h2>
-          <p className="text-text-muted">{data.startup.tagline}</p>
+          <p className="text-text-muted">{pickLocalized(data.startup.tagline, lang as Locale)}</p>
           <dl className="mt-6 grid grid-cols-2 gap-4 text-sm">
             <div>
               <dt className="text-text-muted">Votes received</dt>

@@ -4,6 +4,13 @@ import { dbConnect } from "@/lib/db/connect";
 import { User } from "@/lib/db/models";
 import { notifyWelcome } from "@/lib/email/notify";
 
+// Bootstraps admin access: list comma-separated emails in ADMIN_EMAILS and they're
+// promoted to "admin" on their next sign-in — there's no other way to create one.
+const ADMIN_EMAILS = (process.env.ADMIN_EMAILS ?? "")
+  .split(",")
+  .map((email) => email.trim().toLowerCase())
+  .filter(Boolean);
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   pages: {
@@ -40,6 +47,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           internalUser.emailVerified = new Date();
           await internalUser.save();
         }
+
+        if (ADMIN_EMAILS.includes(profile.email.toLowerCase()) && internalUser.role !== "admin") {
+          internalUser.role = "admin";
+          await internalUser.save();
+        }
+
         token.id = internalUser._id.toString();
         token.role = internalUser.role;
       }

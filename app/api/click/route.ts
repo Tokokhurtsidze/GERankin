@@ -10,7 +10,25 @@ const bodySchema = z.object({
   source: z.enum(["card", "showcase", "slides", "leaderboard"]),
 });
 
+// In-memory per-IP rate limit — same approach as /api/chat and /api/comments.
+const RATE_LIMIT = 20; // clicks
+const RATE_WINDOW_MS = 60_000;
+const clickLog = new Map<string, number[]>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const timestamps = (clickLog.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
+  timestamps.push(now);
+  clickLog.set(ip, timestamps);
+  return timestamps.length > RATE_LIMIT;
+}
+
 export async function POST(req: Request) {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  if (isRateLimited(ip)) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const parsed = bodySchema.safeParse(await req.json());
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
@@ -27,7 +45,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unknown startup or tournament" }, { status: 404 });
   }
 
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   const referrer = req.headers.get("referer") ?? undefined;
 
   // ClickAnalytics.countDocuments is the single source of truth for click counts

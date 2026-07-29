@@ -4,6 +4,7 @@ import { dbConnect } from "@/lib/db/connect";
 import { Startup } from "@/lib/db/models";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary, type Dictionary } from "@/lib/i18n/get-dictionary";
+import { pickLocalized } from "@/lib/i18n/localized";
 
 // Dedicated route for pitch-deck / matchup / historical-highlight slides.
 async function loadStartupSlides(lang: string, dict: Dictionary): Promise<Slide[]> {
@@ -14,7 +15,7 @@ async function loadStartupSlides(lang: string, dict: Dictionary): Promise<Slide[
       id: s._id.toString(),
       eyebrow: s.eliminated ? dict.dashboard.eliminated : dict.frontendSlides.inTheRunning,
       title: s.name,
-      body: s.tagline,
+      body: pickLocalized(s.tagline, lang as Locale),
       href: `/${lang}/startup/${s._id.toString()}`,
     }));
   } catch {

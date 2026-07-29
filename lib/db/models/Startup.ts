@@ -1,12 +1,13 @@
 import { Schema, model, models, type Document, type Model, type Types } from "mongoose";
+import type { LocalizedText } from "@/lib/i18n/localized";
 
 export interface IStartup extends Document {
   _id: Types.ObjectId;
   owner: Types.ObjectId; // 1 user = 1 startup, enforced via unique index
   tournament: Types.ObjectId; // which tournament cycle this entry belongs to
   name: string;
-  tagline: string;
-  description: string;
+  tagline: LocalizedText;
+  description: LocalizedText;
   logoUrl: string;
   websiteUrl: string;
   pitchDeckUrl?: string;
@@ -23,8 +24,14 @@ const StartupSchema = new Schema<IStartup>(
     owner: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     tournament: { type: Schema.Types.ObjectId, ref: "Tournament", required: true, index: true },
     name: { type: String, required: true, trim: true, maxlength: 80 },
-    tagline: { type: String, required: true, trim: true, maxlength: 160 },
-    description: { type: String, required: true, maxlength: 2000 },
+    tagline: {
+      en: { type: String, required: true, trim: true, maxlength: 160 },
+      ka: { type: String, required: true, trim: true, maxlength: 160 },
+    },
+    description: {
+      en: { type: String, required: true, maxlength: 2000 },
+      ka: { type: String, required: true, maxlength: 2000 },
+    },
     logoUrl: { type: String, required: true },
     websiteUrl: { type: String, required: true },
     pitchDeckUrl: { type: String },

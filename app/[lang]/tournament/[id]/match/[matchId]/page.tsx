@@ -8,11 +8,13 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { auth } from "@/lib/auth/auth";
+import type { LocalizedText } from "@/lib/i18n/localized";
+import { pickLocalized } from "@/lib/i18n/localized";
 
 interface ProfileSide {
   _id: unknown;
   name: string;
-  tagline: string;
+  tagline: LocalizedText;
   logoUrl: string;
   websiteUrl: string;
 }
@@ -92,8 +94,8 @@ export default async function MatchVotePage({
       <MatchCompareGrid
         matchId={matchId}
         tournamentId={id}
-        startupA={{ id: String(startupA._id), name: startupA.name, tagline: startupA.tagline, logoUrl: startupA.logoUrl, websiteUrl: startupA.websiteUrl }}
-        startupB={{ id: String(startupB._id), name: startupB.name, tagline: startupB.tagline, logoUrl: startupB.logoUrl, websiteUrl: startupB.websiteUrl }}
+        startupA={{ id: String(startupA._id), name: startupA.name, tagline: pickLocalized(startupA.tagline, locale), logoUrl: startupA.logoUrl, websiteUrl: startupA.websiteUrl }}
+        startupB={{ id: String(startupB._id), name: startupB.name, tagline: pickLocalized(startupB.tagline, locale), logoUrl: startupB.logoUrl, websiteUrl: startupB.websiteUrl }}
         initialVotesA={match.votesA}
         initialVotesB={match.votesB}
         initialVoted={initialVoted}

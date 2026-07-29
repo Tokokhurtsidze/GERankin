@@ -5,14 +5,25 @@ import { dbConnect } from "@/lib/db/connect";
 import { Startup, Tournament, User } from "@/lib/db/models";
 import { sendMail } from "@/lib/email/send";
 
+const httpUrl = z
+  .string()
+  .url()
+  .refine((url) => /^https?:\/\//i.test(url), { message: "URL must start with http:// or https://" });
+
+const localizedText = (min: number, max: number) =>
+  z.object({
+    en: z.string().min(min).max(max),
+    ka: z.string().min(min).max(max),
+  });
+
 const bodySchema = z.object({
   tournamentId: z.string().min(1),
   name: z.string().min(2).max(80),
-  tagline: z.string().min(2).max(160),
-  description: z.string().min(10).max(2000),
-  logoUrl: z.string().url(),
-  websiteUrl: z.string().url(),
-  pitchDeckUrl: z.string().url().optional(),
+  tagline: localizedText(2, 160),
+  description: localizedText(10, 2000),
+  logoUrl: httpUrl,
+  websiteUrl: httpUrl,
+  pitchDeckUrl: httpUrl.optional(),
 });
 
 export async function POST(req: Request) {

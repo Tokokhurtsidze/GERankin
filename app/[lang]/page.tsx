@@ -104,7 +104,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
 
             {champion && (
               <div className="mx-auto mt-8 max-w-md">
-                <ChampionShowcase startup={champion.startup} dict={dict} />
+                <ChampionShowcase startup={champion.startup} dict={dict} locale={locale} />
               </div>
             )}
 
