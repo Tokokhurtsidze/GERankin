@@ -6,6 +6,7 @@ import { dbConnect } from "@/lib/db/connect";
 import { Match, Vote, User, Startup } from "@/lib/db/models";
 import { verifyTurnstileToken } from "@/lib/turnstile/verify";
 import { objectIdString } from "@/lib/db/object-id";
+import { pickNextMatch } from "@/lib/bracket/next-match";
 
 const bodySchema = z.object({
   matchId: objectIdString,
@@ -102,5 +103,29 @@ export async function POST(req: Request) {
     await dbSession.endSession();
   }
 
-  return NextResponse.json({ ok: true });
+  // Auto-advance support: find the next live/overtime sibling matchup in this
+  // round that this voter hasn't voted in yet, so the client can jump straight
+  // there instead of stranding the user on the match they just voted in.
+  const siblingMatches = await Match.find({
+    tournament: match.tournament,
+    round: match.round,
+    status: { $in: ["live", "overtime"] },
+  })
+    .select("_id slot")
+    .lean();
+
+  const siblingIds = siblingMatches.map((m) => m._id.toString());
+  const votedDocs = await Vote.find({
+    voter: session.user.id,
+    match: { $in: siblingIds },
+  })
+    .select("match")
+    .lean();
+
+  const nextMatchId = pickNextMatch(
+    siblingMatches.map((m) => ({ id: m._id.toString(), slot: m.slot })),
+    votedDocs.map((v) => v.match.toString())
+  );
+
+  return NextResponse.json({ ok: true, nextMatchId });
 }
