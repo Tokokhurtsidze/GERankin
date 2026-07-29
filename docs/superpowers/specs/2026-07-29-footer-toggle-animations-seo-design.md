@@ -77,10 +77,18 @@ No changes to `globals.css` — the `.reveal-up` keyframes/media-query already t
 
 ### 3. Hero input restyle
 
+Current input reads as too small in both height *and* length (width) — it's boxed in by the
+hero's own container (`app/[lang]/page.tsx`'s hero form wrapper is currently `mx-auto mt-8
+max-w-lg`), so even a taller input still looks narrow/cramped, especially on mobile.
+
+`app/[lang]/page.tsx`: widen the hero form wrapper from `max-w-lg` to `max-w-2xl`, giving the
+input+button group significantly more horizontal room at every breakpoint.
+
 `components/tournament/HeroLaunchForm.tsx`:
 - Wrap the `<input>` in a `relative` container; add an absolutely-positioned inline SVG link/globe
   icon, left-aligned, muted color.
-- Input: `h-16 rounded-xl pl-12 pr-4 text-base` (up from `h-12 rounded-lg px-4 text-sm`).
+- Input: `h-16 w-full rounded-xl pl-12 pr-4 text-base` (up from `h-12 rounded-lg px-4 text-sm`) —
+  `flex-1` already present keeps it stretching to fill the (now wider) available row.
 - Button: `h-16 rounded-xl px-8 text-base` (up from `h-12 rounded-lg px-6 text-sm`), matching height.
 
 ### 4. SEO completion
