@@ -94,6 +94,7 @@ export default async function MatchVotePage({
       <MatchCompareGrid
         matchId={matchId}
         tournamentId={id}
+        lang={lang}
         startupA={{ id: String(startupA._id), name: startupA.name, tagline: pickLocalized(startupA.tagline, locale), logoUrl: startupA.logoUrl, websiteUrl: startupA.websiteUrl }}
         startupB={{ id: String(startupB._id), name: startupB.name, tagline: pickLocalized(startupB.tagline, locale), logoUrl: startupB.logoUrl, websiteUrl: startupB.websiteUrl }}
         initialVotesA={match.votesA}

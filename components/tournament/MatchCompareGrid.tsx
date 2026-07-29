@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import Image from "next/image";
 import Link from "next/link";
@@ -127,6 +128,7 @@ function Column({
 export function MatchCompareGrid({
   matchId,
   tournamentId,
+  lang,
   startupA,
   startupB,
   initialVotesA,
@@ -137,6 +139,7 @@ export function MatchCompareGrid({
 }: {
   matchId: string;
   tournamentId: string;
+  lang: string;
   startupA: CompareSide;
   startupB: CompareSide;
   initialVotesA: number;
@@ -152,6 +155,7 @@ export function MatchCompareGrid({
   const [votesA, setVotesA] = useState(initialVotesA);
   const [votesB, setVotesB] = useState(initialVotesB);
   const [bumped, setBumped] = useState<"A" | "B" | null>(null);
+  const router = useRouter();
 
   // Polls the authoritative vote count/status so other users' votes and a round
   // closing while this page is open both show up without a manual refresh. The
@@ -205,11 +209,19 @@ export function MatchCompareGrid({
         setError(json.error ?? dict.voteFailed);
         return;
       }
+      const json = await res.json();
       setVoted(side);
       if (side === "A") setVotesA((v) => v + 1);
       else setVotesB((v) => v + 1);
       setBumped(side);
-      setTimeout(() => setBumped(null), 500);
+      setTimeout(() => {
+        setBumped(null);
+        if (json.nextMatchId) {
+          router.push(`/${lang}/tournament/${tournamentId}/match/${json.nextMatchId}`);
+        } else if (backHref) {
+          router.push(backHref);
+        }
+      }, 500);
     } catch {
       setPending(false);
       setError(dict.networkError);
