@@ -86,28 +86,50 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         {/* Hero */}
         <section id="hero" className={SLIDE_CLASS}>
           <div className="mx-auto max-w-3xl text-center">
-            <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">{dict.hero.eyebrow}</p>
-            <h1 className="mx-auto mt-4 max-w-3xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl">
+            <p
+              className="reveal-up text-xs font-semibold uppercase tracking-wide text-text-muted"
+              style={{ "--reveal-index": 0 } as React.CSSProperties}
+            >
+              {dict.hero.eyebrow}
+            </p>
+            <h1
+              className="reveal-up mx-auto mt-4 max-w-3xl text-4xl font-bold leading-tight tracking-tight sm:text-5xl md:text-6xl"
+              style={{ "--reveal-index": 1 } as React.CSSProperties}
+            >
               {dict.hero.titleLine1} {dict.hero.titleLine2} {dict.hero.titleLine3}
             </h1>
-            <p className="mx-auto mt-5 max-w-xl text-base text-text-muted sm:text-lg">{dict.hero.subtitle}</p>
+            <p
+              className="reveal-up mx-auto mt-5 max-w-xl text-base text-text-muted sm:text-lg"
+              style={{ "--reveal-index": 2 } as React.CSSProperties}
+            >
+              {dict.hero.subtitle}
+            </p>
 
-            <div className="mx-auto mt-8 max-w-lg">
+            <div className="reveal-up mx-auto mt-8 max-w-2xl" style={{ "--reveal-index": 3 } as React.CSSProperties}>
               <HeroLaunchForm locale={locale} placeholder={dict.hero.urlPlaceholder} ctaLabel={dict.hero.cta} />
             </div>
 
-            <div className="mt-6 flex justify-center">
+            <div
+              className="reveal-up mt-6 flex justify-center"
+              style={{ "--reveal-index": 4 } as React.CSSProperties}
+            >
               <AvatarCluster count={founderCount} joinWord={dict.hero.joinPrefix} label={dict.hero.joinCount} />
             </div>
 
             {champion && (
-              <div className="mx-auto mt-8 max-w-md">
+              <div
+                className="reveal-up mx-auto mt-8 max-w-md"
+                style={{ "--reveal-index": 5 } as React.CSSProperties}
+              >
                 <ChampionShowcase startup={champion.startup} dict={dict} locale={locale} />
               </div>
             )}
 
             {tournament?.status === "registration" && (
-              <div className="ink-border mx-auto mt-8 flex max-w-md flex-col items-center gap-3 rounded-xl bg-surface px-6 py-5 text-center sm:flex-row sm:justify-between sm:text-left">
+              <div
+                className="reveal-up ink-border mx-auto mt-8 flex max-w-md flex-col items-center gap-3 rounded-xl bg-surface px-6 py-5 text-center sm:flex-row sm:justify-between sm:text-left"
+                style={{ "--reveal-index": 6 } as React.CSSProperties}
+              >
                 <div>
                   <p className="font-semibold">{dict.registration.windowOpen}</p>
                   <p className="text-sm text-text-muted">
@@ -131,8 +153,10 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         {/* Current round matchups — vote directly, same flow as before */}
         <section id="bracket" className={SLIDE_CLASS}>
           <div className="w-full max-w-2xl">
-            <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">{dict.nav.bracket}</p>
-            <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.home.liveMatchups}</h2>
+            <div className="reveal-up">
+              <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">{dict.nav.bracket}</p>
+              <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.home.liveMatchups}</h2>
+            </div>
             <div className="mt-10">
               <LiveBracketSection tournament={tournament} locale={locale} />
             </div>
@@ -142,10 +166,12 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         {/* Slides */}
         <section id="slides" className={SLIDE_CLASS}>
           <div className="w-full max-w-2xl">
-            <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">
-              {dict.nav.slides}
-            </p>
-            <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.home.onTheRadar}</h2>
+            <div className="reveal-up">
+              <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">
+                {dict.nav.slides}
+              </p>
+              <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.home.onTheRadar}</h2>
+            </div>
             <div className="mt-10">
               <SlideDeck slides={slides} />
             </div>
@@ -155,10 +181,12 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         {/* Leaderboard */}
         <section id="leaderboard" className={SLIDE_CLASS}>
           <div className="w-full max-w-2xl">
-            <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">
-              {dict.nav.winners}
-            </p>
-            <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.leaderboard.heading}</h2>
+            <div className="reveal-up">
+              <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">
+                {dict.nav.winners}
+              </p>
+              <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.leaderboard.heading}</h2>
+            </div>
             <div className="mt-10">
               <HallOfFame dict={dict} />
             </div>
@@ -168,10 +196,12 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         {/* Pricing */}
         <section id="pricing" className={SLIDE_CLASS}>
           <div className="w-full max-w-4xl">
-            <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">
-              {dict.nav.pricing}
-            </p>
-            <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.pricing.heading}</h2>
+            <div className="reveal-up">
+              <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">
+                {dict.nav.pricing}
+              </p>
+              <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.pricing.heading}</h2>
+            </div>
             <div className="mt-10">
               <PricingPlans locale={locale} dict={dict} />
             </div>
@@ -181,10 +211,12 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         {/* FAQ */}
         <section id="faq" className={SLIDE_CLASS}>
           <div className="w-full max-w-2xl">
-            <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">
-              {dict.nav.faq}
-            </p>
-            <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.faq.heading}</h2>
+            <div className="reveal-up">
+              <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">
+                {dict.nav.faq}
+              </p>
+              <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.faq.heading}</h2>
+            </div>
             <div className="mt-10">
               <FaqAccordion locale={locale} />
             </div>
@@ -206,8 +238,10 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         {/* Full tournament tree */}
         <section id="bracket-tree" className={SLIDE_CLASS}>
           <div className="flex h-full w-full max-w-6xl flex-col">
-            <p className="shrink-0 text-center text-xs font-semibold uppercase tracking-wide text-text-muted">{dict.nav.bracket}</p>
-            <h2 className="mt-2 shrink-0 text-center text-3xl font-bold tracking-tight">{dict.nav.fullBracket}</h2>
+            <div className="reveal-up shrink-0">
+              <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">{dict.nav.bracket}</p>
+              <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.nav.fullBracket}</h2>
+            </div>
             <div className="mt-6 min-h-0 flex-1">
               <HomeBracketTree
                 tournament={tournament}

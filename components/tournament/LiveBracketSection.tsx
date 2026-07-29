@@ -52,7 +52,7 @@ export async function LiveBracketSection({ tournament, locale }: { tournament: I
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="reveal-up flex flex-col gap-4">
       <p className="text-center text-sm font-semibold text-text-muted">Round {tournament.currentRound}</p>
       {currentRoundMatches.map((m) => (
         <MatchCard key={m.id} match={m} locale={locale} tournamentId={tournament._id.toString()} interactive />

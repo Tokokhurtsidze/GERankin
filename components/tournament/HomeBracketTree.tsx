@@ -38,14 +38,16 @@ export async function HomeBracketTree({
   }
 
   return (
-    <ScaleToFitBracket>
-      <BracketTree
-        tree={tree}
-        locale={locale}
-        tournamentId={tournament._id.toString()}
-        dict={dict}
-        interactive={false}
-      />
-    </ScaleToFitBracket>
+    <div className="reveal-up h-full w-full">
+      <ScaleToFitBracket>
+        <BracketTree
+          tree={tree}
+          locale={locale}
+          tournamentId={tournament._id.toString()}
+          dict={dict}
+          interactive={false}
+        />
+      </ScaleToFitBracket>
+    </div>
   );
 }
