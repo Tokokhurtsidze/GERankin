@@ -44,3 +44,24 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
 
   return NextResponse.json({ ok: true });
 }
+
+export async function PATCH(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  const session = await auth();
+  if (session?.user.role !== "admin") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  if (!objectIdString.safeParse(id).success) {
+    return NextResponse.json({ error: "Invalid id" }, { status: 400 });
+  }
+
+  await dbConnect();
+
+  const tournament = await Tournament.findByIdAndUpdate(id, { $unset: { champion: 1 } });
+  if (!tournament) {
+    return NextResponse.json({ error: "Tournament not found" }, { status: 404 });
+  }
+
+  return NextResponse.json({ ok: true });
+}
