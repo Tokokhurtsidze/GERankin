@@ -353,7 +353,7 @@ export function BracketTree({
         return (
           <div key={match.id}>
             {isLiveMatch && (
-              <div style={{ position: "absolute", left: x, top: topY - 14 }}>
+              <div style={{ position: "absolute", left: x, top: topY - 14, zIndex: 1 }}>
                 <MatchTimer status={match.status} endsAt={match.endsAt} overtimeEndsAt={match.overtimeEndsAt} />
               </div>
             )}
