@@ -21,16 +21,20 @@ export function RemoveChampionButton({ id, name }: { id: string; name: string })
   async function handleRemove() {
     setPending(true);
     setError(null);
-    const res = await fetch(`/api/admin/tournaments/${id}`, { method: "PATCH" });
-    setPending(false);
-
-    if (!res.ok) {
-      const json: { error?: string } = await res.json().catch(() => ({}));
-      setError(json.error ?? "Failed to remove champion");
-      return;
+    try {
+      const res = await fetch(`/api/admin/tournaments/${id}`, { method: "PATCH" });
+      if (!res.ok) {
+        const json: { error?: string } = await res.json().catch(() => ({}));
+        setError(json.error ?? "Failed to remove champion");
+        return;
+      }
+      closeDialog();
+      router.refresh();
+    } catch {
+      setError("Failed to remove champion");
+    } finally {
+      setPending(false);
     }
-    closeDialog();
-    router.refresh();
   }
 
   return (
@@ -49,8 +53,10 @@ export function RemoveChampionButton({ id, name }: { id: string; name: string })
       >
         <h2 className="mb-2 text-lg font-semibold">Remove &ldquo;{name}&rdquo; from the winners showcase?</h2>
         <p className="mb-4 text-sm text-text-muted">
-          This clears the champion for this tournament so it no longer appears on the homepage or leaderboard.
-          The tournament, its matches, and its startups are not deleted.
+          This clears the champion for this tournament so it no longer appears in the winners showcase — on the
+          homepage, the leaderboard, or as the currently reigning champion in the hero section (which falls back
+          to the next most recent past champion, if any). The tournament, its matches, and its startups are not
+          deleted.
         </p>
         {error && <p className="mb-3 text-sm font-medium text-red-600">{error}</p>}
         <div className="flex justify-end gap-2">
@@ -65,7 +71,7 @@ export function RemoveChampionButton({ id, name }: { id: string; name: string })
             type="button"
             disabled={pending}
             onClick={handleRemove}
-            className="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
+            className="rounded-lg bg-accent px-3 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
           >
             {pending ? "Removing..." : "Remove champion"}
           </button>

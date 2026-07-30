@@ -1,19 +1,28 @@
 import Image from "next/image";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { splitWinnerColumns, type WinnerStartup } from "@/lib/tournament/winner-showcase";
 
-function WinnerColumn({ winners }: { winners: WinnerStartup[] }) {
+function WinnerColumn({
+  winners,
+  startIndex,
+  step,
+}: {
+  winners: WinnerStartup[];
+  startIndex: number;
+  step: number;
+}) {
   return (
     <div className="flex flex-row flex-wrap justify-center gap-3 sm:flex-col sm:items-center">
-      {winners.map((winner) => (
+      {winners.map((winner, i) => (
         <a
           key={winner.id}
           href={winner.websiteUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="ink-border block h-14 w-14 shrink-0 overflow-hidden rounded-lg"
+          className="reveal-up ink-border block h-14 w-14 shrink-0 overflow-hidden rounded-lg"
+          style={{ "--reveal-index": startIndex + i * step } as CSSProperties}
         >
           <Image
             src={winner.logoUrl}
@@ -61,11 +70,11 @@ export function WinnerStartupsSection({
     <div className="grid grid-cols-1 items-center gap-8 sm:grid-cols-[1fr_minmax(0,2fr)_1fr] sm:gap-10">
       <div className="sm:order-2">{children}</div>
       <div className="sm:order-1">
-        <WinnerColumn winners={left} />
+        <WinnerColumn winners={left} startIndex={0} step={2} />
       </div>
       {right.length > 0 && (
         <div className="sm:order-3">
-          <WinnerColumn winners={right} />
+          <WinnerColumn winners={right} startIndex={1} step={2} />
         </div>
       )}
     </div>

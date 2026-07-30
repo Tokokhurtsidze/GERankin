@@ -75,7 +75,6 @@
     "postCta": "Post",
     "noComments": "No comments yet — be first.",
     "anon": "Anon",
-    "tbd": "TBD",
     "botVerificationSkipped": "Bot verification skipped (not configured).",
     "dbNotConnectedBody": "Set MONGODB_URI in .env.local to load this match."
   },
