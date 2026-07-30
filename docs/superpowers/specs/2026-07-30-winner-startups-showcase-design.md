@@ -2,10 +2,14 @@
 
 ## Context
 
-The homepage's `#leaderboard` section currently renders `HallOfFame`
-(`components/marketing/HallOfFame.tsx`), a text-only `<ol>` listing each
-completed tournament's name next to its champion's *name* (no logo, no
-link). Separately, the hero section renders `ChampionShowcase`
+`HallOfFame` (`components/marketing/HallOfFame.tsx`) is a text-only
+`<ol>` listing each completed tournament's name next to its champion's
+*name* (no logo, no link). It's rendered in two places: the homepage's
+`#leaderboard` section (`app/[lang]/page.tsx`) and the standalone
+`/[lang]/leaderboard` route (`app/[lang]/leaderboard/page.tsx`).
+Replacing the shared component updates both surfaces at once.
+
+Separately, the hero section renders `ChampionShowcase`
 (`components/tournament/ChampionShowcase.tsx`), a single card for the
 single *current reigning* champion, with logo + link + tagline.
 
@@ -22,7 +26,9 @@ deleting the underlying tournament/startup data.
 
 ## Scope
 
-- Homepage `#leaderboard` section only. The hero's `ChampionShowcase`
+- Both places `HallOfFame` is rendered today: the homepage's
+  `#leaderboard` section and the standalone `/[lang]/leaderboard` page.
+  Replacing the component covers both. The hero's `ChampionShowcase`
   (single reigning champion) is unchanged — it has no "multiple winners"
   concept to lay out.
 - No schema changes. `Tournament.champion` stays a single optional ref.
