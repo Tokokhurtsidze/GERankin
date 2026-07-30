@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { localeAlternates } from "@/lib/i18n/alternates";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
-import { getActiveTournament, getReigningChampion, getFounderCount } from "@/lib/tournament/queries";
+import { getActiveTournament, getReigningChampion, getFounderCount, getWinnerStartups } from "@/lib/tournament/queries";
 import { Match } from "@/lib/db/models";
 import { ChampionShowcase } from "@/components/tournament/ChampionShowcase";
 import { RegistrationCountdown } from "@/components/tournament/RegistrationCountdown";
@@ -12,7 +12,7 @@ import { HomeBracketTree } from "@/components/tournament/HomeBracketTree";
 import { LiveBracketSection } from "@/components/tournament/LiveBracketSection";
 import { AvatarCluster } from "@/components/ui/AvatarCluster";
 import { FooterCtaBanner } from "@/components/marketing/FooterCtaBanner";
-import { HallOfFame } from "@/components/marketing/HallOfFame";
+import { WinnerStartupsSection } from "@/components/marketing/WinnerStartupsSection";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import { SlideScroller, type SlideSectionMeta } from "@/components/marketing/SlideScroller";
@@ -60,10 +60,11 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
   const locale = lang as Locale;
   const dict = await getDictionary(locale);
 
-  const [tournament, champion, founderCount] = await Promise.all([
+  const [tournament, champion, founderCount, winners] = await Promise.all([
     getActiveTournament().catch(() => null),
     getReigningChampion().catch(() => null),
     getFounderCount().catch(() => 0),
+    getWinnerStartups(),
   ]);
 
   const slides = await buildSlides(
@@ -190,16 +191,13 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
 
         {/* Leaderboard */}
         <section id="leaderboard" className={SLIDE_CLASS}>
-          <div className="w-full max-w-2xl">
-            <div className="reveal-up">
-              <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">
-                {dict.nav.winners}
-              </p>
-              <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.leaderboard.heading}</h2>
-            </div>
-            <div className="mt-10">
-              <HallOfFame dict={dict} />
-            </div>
+          <div className="w-full max-w-4xl">
+            <WinnerStartupsSection winners={winners} dict={dict}>
+              <div className="reveal-up text-center">
+                <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">{dict.nav.winners}</p>
+                <h2 className="mt-2 text-3xl font-bold tracking-tight">{dict.leaderboard.heading}</h2>
+              </div>
+            </WinnerStartupsSection>
           </div>
         </section>
 
