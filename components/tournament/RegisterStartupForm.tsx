@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
 function normalizeUrl(value: string): string {
@@ -22,6 +22,31 @@ export function RegisterStartupForm({
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [logoDataUrl, setLogoDataUrl] = useState<string>("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) {
+      setLogoDataUrl("");
+      return;
+    }
+    
+    // Max size 2MB
+    if (file.size > 2 * 1024 * 1024) {
+      setError("Logo file must be smaller than 2MB");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      setLogoDataUrl("");
+      return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setLogoDataUrl(event.target?.result as string);
+      setError(null);
+    };
+    reader.readAsDataURL(file);
+  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -34,7 +59,7 @@ export function RegisterStartupForm({
       name: form.get("name"),
       tagline: { en: form.get("tagline_en"), ka: form.get("tagline_ka") },
       description: { en: form.get("description_en"), ka: form.get("description_ka") },
-      logoUrl: normalizeUrl(String(form.get("logoUrl") ?? "")),
+      logoUrl: logoDataUrl,
       websiteUrl: normalizeUrl(String(form.get("websiteUrl") ?? "")),
     };
 
@@ -76,7 +101,25 @@ export function RegisterStartupForm({
         <textarea name="description_ka" placeholder="აღწერა (ქართულად)" required rows={4} className={inputClass} />
       </div>
 
-      <input name="logoUrl" placeholder="Logo URL" required className={inputClass} />
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="logo-upload" className="text-sm text-text-muted">Logo (Upload image, max 2MB)</label>
+        <input
+          id="logo-upload"
+          type="file"
+          accept="image/png, image/jpeg, image/webp, image/svg+xml, image/gif"
+          ref={fileInputRef}
+          onChange={handleFileChange}
+          required
+          className={inputClass}
+        />
+        {logoDataUrl && (
+          <div className="mt-2 h-16 w-16 overflow-hidden rounded-md border border-white/10">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={logoDataUrl} alt="Logo preview" className="h-full w-full object-cover" />
+          </div>
+        )}
+      </div>
+
       <input
         name="websiteUrl"
         placeholder="yourstartup.ge"

@@ -10,6 +10,13 @@ const httpUrl = z
   .url()
   .refine((url) => /^https?:\/\//i.test(url), { message: "URL must start with http:// or https://" });
 
+const logoUrlSchema = z
+  .string()
+  .refine(
+    (url) => /^https?:\/\//i.test(url) || /^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml);base64,/i.test(url),
+    { message: "Logo must be a valid URL or a Base64 image" }
+  );
+
 const localizedText = (min: number, max: number) =>
   z.object({
     en: z.string().min(min).max(max),
@@ -21,7 +28,7 @@ const bodySchema = z.object({
   name: z.string().min(2).max(80),
   tagline: localizedText(2, 160),
   description: localizedText(10, 2000),
-  logoUrl: httpUrl,
+  logoUrl: logoUrlSchema,
   websiteUrl: httpUrl,
   pitchDeckUrl: httpUrl.optional(),
 });
