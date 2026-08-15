@@ -1,8 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { VoteBar } from "./VoteBar";
-import { VoteButtons } from "./VoteButtons";
-import { MatchTimeline } from "./MatchTimeline";
 
 export interface MatchCardSide {
   id: string;
@@ -79,19 +77,25 @@ export function MatchCard({
         <p className="font-mono-score mt-2 text-center text-xs font-semibold uppercase text-accent">Overtime</p>
       )}
 
-      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <MatchTimeline matchId={match.id} label="Timeline" />
-        {interactive && match.startupA && match.startupB && (
-          <div className="sm:w-56">
-            <VoteButtons
-              locale={locale}
-              tournamentId={tournamentId}
-              matchId={match.id}
-              canVote={match.status === "live" || match.status === "overtime"}
-            />
-          </div>
-        )}
-      </div>
+      {interactive && match.startupA && match.startupB && (
+        <div className="mt-4 flex justify-end">
+          <Link
+            href={
+              match.status === "live" || match.status === "overtime"
+                ? `/${locale}/tournament/${tournamentId}/match/${match.id}`
+                : "#"
+            }
+            aria-disabled={match.status !== "live" && match.status !== "overtime"}
+            className={`rounded-md px-4 py-2 text-center text-sm font-semibold text-white sm:w-56 ${
+              match.status === "live" || match.status === "overtime"
+                ? "bg-accent hover:bg-accent-hover"
+                : "pointer-events-none cursor-not-allowed bg-accent opacity-40"
+            }`}
+          >
+            Vote
+          </Link>
+        </div>
+      )}
     </div>
   );
 }
