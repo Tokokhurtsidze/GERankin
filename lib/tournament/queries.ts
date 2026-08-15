@@ -1,5 +1,5 @@
 import { dbConnect } from "@/lib/db/connect";
-import { Tournament, Startup, type ITournament, type IStartup } from "@/lib/db/models";
+import { Tournament, Startup, User, type ITournament, type IStartup } from "@/lib/db/models";
 import type { WinnerStartup } from "@/lib/tournament/winner-showcase";
 
 export async function getActiveTournament(): Promise<ITournament | null> {
@@ -22,9 +22,10 @@ export async function getReigningChampion(): Promise<{ tournament: ITournament; 
   return { tournament, startup };
 }
 
-/** Founder headcount for the homepage social-proof strip. One founder, currently. */
+/** Real founder headcount for the homepage social-proof strip. */
 export async function getFounderCount(): Promise<number> {
-  return 1;
+  await dbConnect();
+  return User.countDocuments();
 }
 
 /** All completed tournaments' champions, most-recent first, for the
