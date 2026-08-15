@@ -2,22 +2,15 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion, type Variants } from "framer-motion";
-import { AvatarCluster } from "@/components/ui/AvatarCluster";
 
 export function FooterCtaBanner({
   locale,
   title,
   cta,
-  founderCount,
-  joinWord,
-  joinLabel,
 }: {
   locale: string;
   title: string;
   cta: string;
-  founderCount: number;
-  joinWord: string;
-  joinLabel: string;
 }) {
   const shouldReduceMotion = useReducedMotion();
 
@@ -49,9 +42,6 @@ export function FooterCtaBanner({
         >
           {cta} →
         </Link>
-      </motion.div>
-      <motion.div variants={item} className="mt-6 flex justify-center">
-        <AvatarCluster count={founderCount} joinWord={joinWord} label={joinLabel} />
       </motion.div>
     </motion.div>
   );

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { isLocale, type Locale } from "@/lib/i18n/config";
 import { localeAlternates } from "@/lib/i18n/alternates";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
-import { getActiveTournament, getReigningChampion, getFounderCount, getWinnerStartups } from "@/lib/tournament/queries";
+import { getActiveTournament, getReigningChampion, getWinnerStartups } from "@/lib/tournament/queries";
 import { Match } from "@/lib/db/models";
 import { ChampionShowcase } from "@/components/tournament/ChampionShowcase";
 import { RegistrationCountdown } from "@/components/tournament/RegistrationCountdown";
@@ -67,10 +67,9 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
   const locale = lang as Locale;
   const dict = await getDictionary(locale);
 
-  const [tournament, champion, founderCount, winners] = await Promise.all([
+  const [tournament, champion, winners] = await Promise.all([
     getActiveTournament().catch(() => null),
     getReigningChampion().catch(() => null),
-    getFounderCount().catch(() => 0),
     getWinnerStartups(),
   ]);
 
@@ -234,14 +233,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
 
         {/* Closing CTA */}
         <section id="cta" className={SLIDE_CLASS}>
-          <FooterCtaBanner
-            locale={locale}
-            title={dict.footerCta.title}
-            cta={dict.footerCta.cta}
-            founderCount={founderCount}
-            joinWord={dict.hero.joinPrefix}
-            joinLabel={dict.hero.joinCount}
-          />
+          <FooterCtaBanner locale={locale} title={dict.footerCta.title} cta={dict.footerCta.cta} />
         </section>
 
         {/* Full tournament tree */}
