@@ -10,7 +10,6 @@ import { HeroLaunchForm } from "@/components/tournament/HeroLaunchForm";
 import { HowItWorks } from "@/components/tournament/HowItWorks";
 import { HomeBracketTree } from "@/components/tournament/HomeBracketTree";
 import { LiveBracketSection } from "@/components/tournament/LiveBracketSection";
-import { AvatarCluster } from "@/components/ui/AvatarCluster";
 import { FooterCtaBanner } from "@/components/marketing/FooterCtaBanner";
 import { WinnerStartupsSection } from "@/components/marketing/WinnerStartupsSection";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
@@ -126,13 +125,6 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
 
             <div className="reveal-up mx-auto mt-8 max-w-2xl" style={{ "--reveal-index": 3 } as React.CSSProperties}>
               <HeroLaunchForm locale={locale} placeholder={dict.hero.urlPlaceholder} ctaLabel={dict.hero.cta} />
-            </div>
-
-            <div
-              className="reveal-up mt-6 flex justify-center"
-              style={{ "--reveal-index": 4 } as React.CSSProperties}
-            >
-              <AvatarCluster count={founderCount} joinWord={dict.hero.joinPrefix} label={dict.hero.joinCount} />
             </div>
 
             {champion && (
