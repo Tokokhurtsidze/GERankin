@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { defaultLocale, isLocale, type Locale } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -63,10 +64,17 @@ export default async function LangLayout({
         <nav className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link
             href={`/${locale}`}
-            className="group flex shrink-0 items-baseline gap-1.5 whitespace-nowrap text-base font-bold tracking-tight"
+            className="group flex shrink-0 items-center gap-2 whitespace-nowrap text-base font-bold tracking-tight"
           >
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent transition-transform group-hover:scale-125" />
-            Startup Clash <span className="text-text-muted">GE</span>
+            <Image
+              src="/android-chrome-192x192.png"
+              alt="Startup Clash GE"
+              width={28}
+              height={28}
+              className="rounded-md transition-transform group-hover:scale-110"
+              priority
+            />
+            Startup Clash
           </Link>
 
           <div className="hidden shrink-0 items-center gap-6 whitespace-nowrap text-sm font-medium tracking-wide text-text-muted xl:flex">
