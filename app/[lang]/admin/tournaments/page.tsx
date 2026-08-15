@@ -7,6 +7,7 @@ import { CreateTournamentForm } from "@/components/tournament/CreateTournamentFo
 import { RegistrationCountdown } from "@/components/tournament/RegistrationCountdown";
 import { DeleteTournamentButton } from "@/components/admin/DeleteTournamentButton";
 import { RemoveChampionButton } from "@/components/admin/RemoveChampionButton";
+import { AdvanceRoundButton } from "@/components/admin/AdvanceRoundButton";
 
 async function loadTournaments(): Promise<ITournament[] | null> {
   try {
@@ -65,6 +66,9 @@ export default async function AdminTournamentsPage({ params }: { params: Promise
                 <div className="flex items-center gap-3">
                   {t.status === "registration" && (
                     <RegistrationCountdown closesAt={t.registrationClosesAt.toISOString()} />
+                  )}
+                  {["registration", "seeding", "in_progress"].includes(t.status) && (
+                    <AdvanceRoundButton id={t._id.toString()} status={t.status} />
                   )}
                   {t.status === "completed" && t.champion && (
                     <RemoveChampionButton id={t._id.toString()} name={t.name} />

@@ -4,25 +4,13 @@ import { auth } from "@/lib/auth/auth";
 import { dbConnect } from "@/lib/db/connect";
 import { Comment } from "@/lib/db/models";
 import { objectIdString } from "@/lib/db/object-id";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 const postSchema = z.object({
   matchId: objectIdString,
   body: z.string().min(1).max(1000),
   parentId: objectIdString.optional(),
 });
-
-// In-memory per-user rate limit — same approach as /api/chat, no Redis/Upstash wired up yet.
-const RATE_LIMIT = 10; // comments
-const RATE_WINDOW_MS = 60_000;
-const commentLog = new Map<string, number[]>();
-
-function isRateLimited(userId: string): boolean {
-  const now = Date.now();
-  const timestamps = (commentLog.get(userId) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
-  timestamps.push(now);
-  commentLog.set(userId, timestamps);
-  return timestamps.length > RATE_LIMIT;
-}
 
 export async function GET(req: Request) {
   const matchId = new URL(req.url).searchParams.get("matchId");
@@ -46,7 +34,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (isRateLimited(session.user.id)) {
+  if (!(await checkRateLimit("comments", session.user.id, 10, 60))) {
     return NextResponse.json({ error: "Too many comments — slow down." }, { status: 429 });
   }
 

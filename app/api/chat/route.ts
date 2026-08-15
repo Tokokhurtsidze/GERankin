@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { streamText, convertToModelMessages, type UIMessage } from "ai";
 import { openrouter, DEFAULT_CHAT_MODEL } from "@/lib/openrouter/client";
+import { checkRateLimit } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 30;
@@ -20,25 +21,9 @@ If asked something outside the platform's scope, say so briefly and redirect to 
 const MAX_MESSAGES = 20;
 const MAX_MESSAGE_LENGTH = 4000;
 
-// In-memory per-IP rate limit — no Redis/Upstash wired up in this codebase yet.
-// Good enough for a single instance; resets on deploy/restart and won't hold
-// across multiple serverless instances, but it's real backpressure where there
-// was previously none at all on a route that burns a paid LLM key per request.
-const RATE_LIMIT = 15; // requests
-const RATE_WINDOW_MS = 60_000;
-const requestLog = new Map<string, number[]>();
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now();
-  const timestamps = (requestLog.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
-  timestamps.push(now);
-  requestLog.set(ip, timestamps);
-  return timestamps.length > RATE_LIMIT;
-}
-
 export async function POST(req: Request) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
-  if (isRateLimited(ip)) {
+  if (!(await checkRateLimit("chat", ip, 15, 60))) {
     return NextResponse.json({ error: "Too many requests — slow down." }, { status: 429 });
   }
 

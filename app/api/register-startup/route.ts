@@ -5,17 +5,50 @@ import { dbConnect } from "@/lib/db/connect";
 import { Startup, Tournament, User } from "@/lib/db/models";
 import { sendMail } from "@/lib/email/send";
 
+// Synchronous, string-only SSRF guard (no DNS resolution — a domain that
+// resolves to a private/internal address at request time still gets through,
+// but this stops the obvious cases: literal localhost/loopback/link-local/
+// private-range IPs and the cloud metadata hostname).
+const BLOCKED_HOSTNAMES = new Set(["localhost", "169.254.169.254", "metadata.google.internal"]);
+
+function isPrivateHost(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+  if (BLOCKED_HOSTNAMES.has(host) || host === "0.0.0.0" || host.endsWith(".local")) return true;
+  const ipv4 = host.match(/^(\d{1,3})\.(\d{1,3})\.\d{1,3}\.\d{1,3}$/);
+  if (ipv4) {
+    const a = Number(ipv4[1]);
+    const b = Number(ipv4[2]);
+    if (a === 10 || a === 127 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function isSafePublicUrl(url: string): boolean {
+  try {
+    return !isPrivateHost(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+}
+
 const httpUrl = z
   .string()
   .url()
-  .refine((url) => /^https?:\/\//i.test(url), { message: "URL must start with http:// or https://" });
+  .refine((url) => /^https?:\/\//i.test(url), { message: "URL must start with http:// or https://" })
+  .refine(isSafePublicUrl, { message: "URL must not point to a private or internal address" });
 
 const logoUrlSchema = z
   .string()
+  .max(2_900_000, { message: "Logo image is too large" })
   .refine(
     (url) => /^https?:\/\//i.test(url) || /^data:image\/(png|jpeg|jpg|gif|webp|svg\+xml);base64,/i.test(url),
     { message: "Logo must be a valid URL or a Base64 image" }
-  );
+  )
+  .refine((url) => !/^https?:\/\//i.test(url) || isSafePublicUrl(url), {
+    message: "Logo URL must not point to a private or internal address",
+  });
 
 const localizedText = (min: number, max: number) =>
   z.object({

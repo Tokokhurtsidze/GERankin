@@ -1,0 +1,19 @@
+name: Tournament round sweep
+
+# Vercel's own Cron Jobs are capped at once/day on the Hobby plan (a more
+# frequent schedule fails deployment outright, so vercel.json stays daily as
+# a free do-nothing-wrong fallback). This workflow is the real driver: pings
+# /api/cron/sweep every 5 minutes so rounds actually advance on time, for free.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  sweep:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping /api/cron/sweep
+        run: |
+          curl -sf -X GET "${{ secrets.PROD_URL }}/api/cron/sweep" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"

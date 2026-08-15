@@ -16,6 +16,7 @@ import { WinnerStartupsSection } from "@/components/marketing/WinnerStartupsSect
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
 import { SlideScroller, type SlideSectionMeta } from "@/components/marketing/SlideScroller";
+import { SectionScrollNav } from "@/components/marketing/SectionScrollNav";
 import { SlideDeck, type Slide } from "@/components/slides/SlideDeck";
 import { notFound } from "next/navigation";
 
@@ -45,6 +46,13 @@ async function buildSlides(locale: string, tournamentId?: string, currentRound?:
 
 const SLIDE_CLASS =
   "no-scrollbar h-full w-full snap-start flex flex-col items-center justify-center overflow-y-auto px-4 py-12 sm:px-6";
+
+// Same slide, but top-aligned instead of centered — for sections whose content
+// (match lists, bracket trees) can grow taller than the viewport. Centering an
+// overflowing flex child makes its leading edge scroll-unreachable, so those
+// sections need justify-start instead.
+const SLIDE_CLASS_TOP =
+  "no-scrollbar h-full w-full snap-start flex flex-col items-center justify-start overflow-y-auto px-4 py-12 sm:px-6";
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
@@ -162,7 +170,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
         </section>
 
         {/* Current round matchups — vote directly, same flow as before */}
-        <section id="bracket" className={SLIDE_CLASS}>
+        <section id="bracket" className={SLIDE_CLASS_TOP}>
           <div className="w-full max-w-2xl">
             <div className="reveal-up">
               <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">{dict.nav.bracket}</p>
@@ -172,6 +180,7 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
               <LiveBracketSection tournament={tournament} locale={locale} />
             </div>
           </div>
+          <SectionScrollNav targetId="bracket" />
         </section>
 
         {/* Slides */}
