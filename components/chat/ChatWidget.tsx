@@ -45,7 +45,7 @@ export function ChatWidget() {
             {messages.map((m) => (
               <div
                 key={m.id}
-                className={`max-w-[85%] rounded-lg px-3 py-2 text-sm ${
+                className={`w-fit max-w-[85%] rounded-lg px-3 py-2 text-sm ${
                   m.role === "user" ? "ml-auto bg-accent text-white" : "ink-border bg-surface"
                 }`}
               >
@@ -53,10 +53,10 @@ export function ChatWidget() {
               </div>
             ))}
             {status === "streaming" && (
-              <div className="ink-border max-w-[85%] rounded-lg bg-surface px-3 py-2 text-sm">...</div>
+              <div className="ink-border w-fit max-w-[85%] rounded-lg bg-surface px-3 py-2 text-sm">...</div>
             )}
             {error && (
-              <div className="ink-border max-w-[85%] rounded-lg border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+              <div className="ink-border w-fit max-w-[85%] rounded-lg border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                 Something went wrong. Please try again.
               </div>
             )}

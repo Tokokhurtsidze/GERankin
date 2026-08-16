@@ -352,7 +352,7 @@ export function BracketTree({
         const isLiveMatch = match.status === "live" || match.status === "overtime";
         return (
           <div key={match.id}>
-            {isLiveMatch && (
+            {interactive && isLiveMatch && (
               <div style={{ position: "absolute", left: x, top: topY - 14, zIndex: 1 }}>
                 <MatchTimer status={match.status} endsAt={match.endsAt} overtimeEndsAt={match.overtimeEndsAt} />
               </div>
