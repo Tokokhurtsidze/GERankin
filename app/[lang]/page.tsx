@@ -10,7 +10,6 @@ import { HeroLaunchForm } from "@/components/tournament/HeroLaunchForm";
 import { HowItWorks } from "@/components/tournament/HowItWorks";
 import { HomeBracketTree } from "@/components/tournament/HomeBracketTree";
 import { LiveBracketSection } from "@/components/tournament/LiveBracketSection";
-import { FooterCtaBanner } from "@/components/marketing/FooterCtaBanner";
 import { WinnerStartupsSection } from "@/components/marketing/WinnerStartupsSection";
 import { PricingPlans } from "@/components/marketing/PricingPlans";
 import { FaqAccordion } from "@/components/marketing/FaqAccordion";
@@ -94,7 +93,6 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
     { id: "leaderboard", label: dict.nav.winners },
     { id: "pricing", label: dict.nav.pricing },
     { id: "faq", label: dict.nav.faq },
-    { id: "cta", label: "Get started" },
     { id: "bracket-tree", label: dict.nav.fullBracket },
   ];
 
@@ -229,11 +227,6 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
               <FaqAccordion locale={locale} />
             </div>
           </div>
-        </section>
-
-        {/* Closing CTA */}
-        <section id="cta" className={SLIDE_CLASS}>
-          <FooterCtaBanner locale={locale} title={dict.footerCta.title} cta={dict.footerCta.cta} />
         </section>
 
         {/* Full tournament tree */}

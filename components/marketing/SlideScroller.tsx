@@ -80,7 +80,7 @@ export function SlideScroller({ sections, children }: { sections: SlideSectionMe
     <div className="relative">
       <div
         ref={containerRef}
-        className="no-scrollbar h-[calc(100dvh-4rem)] snap-y snap-mandatory overflow-y-auto scroll-smooth"
+        className="no-scrollbar h-[calc(100dvh-4rem)] snap-y snap-mandatory overflow-y-auto"
       >
         {children}
       </div>

@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { BracketTree as BracketTreeData, TreeMatch } from "@/lib/bracket/tree";
 import { BracketSlot, BRACKET_SLOT_SIZE } from "./BracketSlot";
-import { MatchTimer } from "./MatchTimer";
 
 /**
  * Connector-line / column-position geometry: pure math derived from
@@ -119,6 +118,7 @@ export function BracketTree({
   tournamentId,
   dict,
   interactive = true,
+  showRoundHeaders = true,
 }: {
   tree: BracketTreeData;
   locale: string;
@@ -126,6 +126,8 @@ export function BracketTree({
   dict: { round: string; final: string };
   /** false = no pan/zoom viewport, no clipping — renders at natural size (homepage teaser). */
   interactive?: boolean;
+  /** false = hide the per-column "Round N" labels, keep "Final" — for callers that already show the round elsewhere. */
+  showRoundHeaders?: boolean;
 }) {
   const [transform, setTransform] = useState({ scale: 1, x: 0, y: 0 });
   const [dragging, setDragging] = useState(false);
@@ -320,7 +322,9 @@ export function BracketTree({
         transformOrigin: "0 0",
       }}
     >
-      {layout.headers.map((h) => (
+      {layout.headers
+        .filter((h) => showRoundHeaders || h.label === dict.final)
+        .map((h) => (
         <div
           key={h.key}
           className="font-mono-score absolute top-0 whitespace-nowrap text-[10px] uppercase tracking-wide text-text-muted"
@@ -349,14 +353,8 @@ export function BracketTree({
       {layout.pairs.map(({ match, x, topY }) => {
         const a = sideProps(match, "A");
         const b = sideProps(match, "B");
-        const isLiveMatch = match.status === "live" || match.status === "overtime";
         return (
           <div key={match.id}>
-            {interactive && isLiveMatch && (
-              <div style={{ position: "absolute", left: x, top: topY - 14, zIndex: 1 }}>
-                <MatchTimer status={match.status} endsAt={match.endsAt} overtimeEndsAt={match.overtimeEndsAt} />
-              </div>
-            )}
             <div style={{ position: "absolute", left: x, top: topY }}>
               <BracketSlot
                 startup={a.startup}

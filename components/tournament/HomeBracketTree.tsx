@@ -47,8 +47,11 @@ export async function HomeBracketTree({
   return (
     <div className="reveal-up h-full w-full">
       {liveMatch && (
-        <div className="mb-3 flex justify-center">
+        <div className="mb-3 flex flex-col items-center gap-1.5">
           <MatchTimer status={liveMatch.status} endsAt={liveMatch.endsAt} overtimeEndsAt={liveMatch.overtimeEndsAt} size="lg" />
+          <p className="text-xs font-semibold uppercase tracking-wide text-text-muted">
+            {dict.round} {tournament.currentRound}
+          </p>
         </div>
       )}
       <ScaleToFitBracket>
@@ -58,6 +61,7 @@ export async function HomeBracketTree({
           tournamentId={tournament._id.toString()}
           dict={dict}
           interactive={false}
+          showRoundHeaders={false}
         />
       </ScaleToFitBracket>
     </div>
