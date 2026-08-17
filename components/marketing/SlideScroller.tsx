@@ -12,6 +12,10 @@ export interface SlideSectionMeta {
  * full-height, one at a time, as the user scrolls or clicks a dot.
  * Content past this container (the closing CTA + footer) scrolls in normally
  * once the user reaches the last slide.
+ *
+ * Mobile (below `sm`) opts out of the slide deck entirely — sections stack in
+ * normal document flow and the page just scrolls, since the one-screen-per-
+ * section pattern doesn't fit small viewports well.
  */
 export function SlideScroller({ sections, children }: { sections: SlideSectionMeta[]; children: ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -80,7 +84,7 @@ export function SlideScroller({ sections, children }: { sections: SlideSectionMe
     <div className="relative">
       <div
         ref={containerRef}
-        className="no-scrollbar h-[calc(100dvh-4rem)] snap-y snap-mandatory overflow-y-auto"
+        className="no-scrollbar sm:h-[calc(100dvh-4rem)] sm:snap-y sm:snap-mandatory sm:overflow-y-auto"
       >
         {children}
       </div>

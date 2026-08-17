@@ -42,15 +42,17 @@ async function buildSlides(locale: string, tournamentId?: string, currentRound?:
   }
 }
 
+// Below `sm`, sections opt out of the slide deck (see SlideScroller) and just
+// stack in normal document flow — no fixed height, no snap, no clipping.
 const SLIDE_CLASS =
-  "no-scrollbar h-full w-full snap-start flex flex-col items-center justify-center overflow-y-auto px-4 py-12 sm:px-6";
+  "no-scrollbar w-full flex flex-col items-center px-4 py-12 sm:h-full sm:snap-start sm:justify-center sm:overflow-y-auto sm:px-6";
 
-// Same slide, but top-aligned instead of centered — for sections whose content
-// (match lists, bracket trees) can grow taller than the viewport. Centering an
-// overflowing flex child makes its leading edge scroll-unreachable, so those
-// sections need justify-start instead.
+// Same slide, but top-aligned instead of centered at `sm`+ — for sections
+// whose content (match lists, bracket trees) can grow taller than the
+// viewport. Centering an overflowing flex child makes its leading edge
+// scroll-unreachable, so those sections need justify-start instead.
 const SLIDE_CLASS_TOP =
-  "no-scrollbar h-full w-full snap-start flex flex-col items-center justify-start overflow-y-auto px-4 py-12 sm:px-6";
+  "no-scrollbar w-full flex flex-col items-center px-4 py-12 sm:h-full sm:snap-start sm:justify-start sm:overflow-y-auto sm:px-6";
 
 export async function generateMetadata({ params }: { params: Promise<{ lang: string }> }): Promise<Metadata> {
   const { lang } = await params;
@@ -231,7 +233,10 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
 
         {/* Full tournament tree */}
         <section id="bracket-tree" className={SLIDE_CLASS}>
-          <div className="flex h-full w-full max-w-6xl flex-col">
+          {/* Fixed height on mobile: this section no longer sits inside a
+              full-viewport slide there (see SLIDE_CLASS), and the scaled-to-fit
+              tree below needs a real, non-auto height to measure against. */}
+          <div className="flex h-[32rem] w-full max-w-6xl flex-col sm:h-full">
             <div className="reveal-up shrink-0">
               <p className="text-center text-xs font-semibold uppercase tracking-wide text-text-muted">{dict.nav.bracket}</p>
               <h2 className="mt-2 text-center text-3xl font-bold tracking-tight">{dict.nav.fullBracket}</h2>

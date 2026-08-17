@@ -5,6 +5,11 @@
  * one "page" at a time, without depending on wheel/touch scroll gestures.
  * `sticky bottom-4` inside that section's own scrollable div, so it floats at
  * the bottom of whatever's currently visible and rides along as you scroll.
+ *
+ * Below `sm` the section isn't its own scroll container (see SLIDE_CLASS_TOP —
+ * mobile uses normal document flow instead of the slide deck), so `scrollBy`
+ * on it would be a no-op there. Hidden on mobile for that reason; natural page
+ * scroll/swipe covers the same job.
  */
 export function SectionScrollNav({ targetId, step = 340 }: { targetId: string; step?: number }) {
   function scroll(direction: 1 | -1) {
@@ -12,7 +17,7 @@ export function SectionScrollNav({ targetId, step = 340 }: { targetId: string; s
   }
 
   return (
-    <div className="sticky bottom-4 z-20 mt-4 flex justify-center gap-3">
+    <div className="sticky bottom-4 z-20 mt-4 hidden justify-center gap-3 sm:flex">
       <button
         type="button"
         onClick={() => scroll(-1)}
