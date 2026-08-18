@@ -60,7 +60,10 @@ export default async function LangLayout({
   return (
     <div lang={locale} className="flex min-h-full flex-col">
       <HideOnFullscreenRoutes>
-      <header className="sticky top-0 z-40 h-16 border-b border-border bg-bg/90 backdrop-blur-md">
+      {/* will-change-transform forces its own GPU layer — sticky + backdrop-blur
+          otherwise hits a WebKit bug where iOS Safari skips repainting the
+          element on scroll, so it visually lags/freezes instead of tracking. */}
+      <header className="sticky top-0 z-40 h-16 border-b border-border bg-bg/90 backdrop-blur-md will-change-transform">
         <nav className="mx-auto flex h-full max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link
             href={`/${locale}`}

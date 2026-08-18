@@ -22,6 +22,25 @@ export function MobileNav({ children }: { children: ReactNode }) {
     };
   }, [open]);
 
+  // Nav links to same-page sections (#bracket, #faq, …) default to an instant
+  // anchor jump, which reads as clunky right on top of the panel's own close
+  // animation. Capture-phase so this runs before the Link's own click
+  // handler, close the panel, then smooth-scroll once its transition
+  // (duration-300 below) has finished instead of both fighting at once.
+  function onNavClickCapture(e: React.MouseEvent) {
+    const anchor = (e.target as HTMLElement).closest("a");
+    const href = anchor?.getAttribute("href") ?? "";
+    const hashIndex = href.indexOf("#");
+    if (hashIndex === -1) return;
+
+    const target = document.getElementById(href.slice(hashIndex + 1));
+    if (!target) return; // section isn't on this page — let Link navigate normally
+
+    e.preventDefault();
+    setOpen(false);
+    window.setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
+  }
+
   return (
     <div className="xl:hidden">
       <button
@@ -57,6 +76,7 @@ export function MobileNav({ children }: { children: ReactNode }) {
 
       <div
         onClick={() => setOpen(false)}
+        onClickCapture={onNavClickCapture}
         className={`ink-border hard-shadow fixed inset-x-0 top-16 z-40 origin-top rounded-b-2xl bg-bg transition-all duration-300 ease-out ${
           open ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-3 opacity-0"
         }`}

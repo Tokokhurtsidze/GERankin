@@ -55,7 +55,14 @@ html {
   background: var(--bg);
   scrollbar-width: none;
   -ms-overflow-style: none;
-  overflow-x: hidden;
+  /* clip, not hidden: per the CSS overflow spec, pairing overflow-x: hidden
+     with overflow-y left as visible forces the used value of overflow-y to
+     auto instead — silently turning html into its own scroll container
+     alongside body. That nested double-scroller is what broke position:
+     sticky tracking. clip is exempt from that forcing rule, so overflow-y
+     actually stays visible and there's exactly one real scroll container. */
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 html::-webkit-scrollbar {
@@ -68,7 +75,8 @@ body {
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  overflow-x: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 body::-webkit-scrollbar {
