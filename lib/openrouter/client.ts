@@ -14,4 +14,4 @@ export const openrouter = createOpenAI({
   },
 });
 
-export const DEFAULT_CHAT_MODEL = process.env.OPENROUTER_MODEL ?? "openai/gpt-oss-20b:free";
+export const DEFAULT_CHAT_MODEL = process.env.OPENROUTER_MODEL ?? "openrouter/free";
