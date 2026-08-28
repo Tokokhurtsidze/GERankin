@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.57",
     "@ai-sdk/openai": "^4.0.20",
     "@ai-sdk/react": "^4.0.40",
     "@react-email/components": "^1.0.12",

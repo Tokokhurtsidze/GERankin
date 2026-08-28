@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { streamText, convertToModelMessages, type UIMessage } from "ai";
-import { openrouter, DEFAULT_CHAT_MODEL } from "@/lib/openrouter/client";
+import { googleAI, DEFAULT_CHAT_MODEL } from "@/lib/google/client";
 import { checkRateLimit } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
@@ -43,11 +43,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
   }
 
+  // Use Gemini 2.5 Flash via @ai-sdk/google. The GEMINI_MODEL env var can
+  // override the default model when desired.
+  const modelMessages = await convertToModelMessages(messages);
+
   try {
     const result = streamText({
-      model: openrouter(DEFAULT_CHAT_MODEL),
+      model: googleAI(DEFAULT_CHAT_MODEL),
       system: SYSTEM_PROMPT,
-      messages: await convertToModelMessages(messages),
+      messages: modelMessages,
     });
 
     return result.toUIMessageStreamResponse();
